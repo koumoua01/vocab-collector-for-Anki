@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vocab Collector Options</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Vocab Collector Settings</h1>
+      <p>Configure AnkiConnect and default card mapping.</p>
+    </header>
+
+    <main>
+      <section class="panel">
+        <h2>AnkiConnect</h2>
+        <label>
+          AnkiConnect URL
+          <input id="anki-url" type="url" placeholder="http://127.0.0.1:8765" />
+        </label>
+        <label>
+          Default Deck
+          <input id="deck" type="text" />
+        </label>
+        <label>
+          Default Model
+          <input id="model" type="text" />
+        </label>
+        <label>
+          Default Tags
+          <input id="tags" type="text" placeholder="vocab" />
+        </label>
+        <label class="checkbox">
+          <input id="allow-duplicate" type="checkbox" />
+          Allow duplicate cards
+        </label>
+      </section>
+
+      <section class="panel">
+        <h2>OpenRouter AI</h2>
+        <p>Generate definitions using OpenRouter. Your API key stays local.</p>
+        <label>
+          OpenRouter API Key
+          <input id="openrouter-key" type="password" placeholder="sk-..." />
+        </label>
+        <label>
+          OpenRouter Model
+          <input id="openrouter-model" type="text" placeholder="openrouter/auto" />
+        </label>
+      </section>
+
+      <section class="panel">
+        <h2>Field Mapping</h2>
+        <p>Map vocab fields to your Anki model fields.</p>
+        <div class="grid">
+          <label>
+            Term (Front)
+            <input id="field-front" type="text" />
+          </label>
+          <label>
+            Definition (Back)
+            <input id="field-back" type="text" />
+          </label>
+          <label>
+            Example
+            <input id="field-example" type="text" placeholder="Optional" />
+          </label>
+          <label>
+            Source URL
+            <input id="field-source" type="text" placeholder="Optional" />
+          </label>
+        </div>
+        <div class="grid">
+          <label>
+            Key
+            <input id="field-key" type="text" placeholder="Optional" />
+          </label>
+          <label>
+            Word
+            <input id="field-word" type="text" placeholder="Optional" />
+          </label>
+          <label>
+            Context
+            <input id="field-context" type="text" placeholder="Optional" />
+          </label>
+          <label>
+            FrontContext
+            <input id="field-front-context" type="text" placeholder="Optional" />
+          </label>
+          <label>
+            BackDefOnly
+            <input id="field-back-def-only" type="text" placeholder="Optional" />
+          </label>
+          <label>
+            Reverse
+            <input id="field-reverse" type="text" placeholder="Optional" />
+          </label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <button id="save" class="primary">Save settings</button>
+        <button id="test" class="secondary">Test connection</button>
+        <button id="test-openrouter" class="secondary">Test OpenRouter</button>
+        <div id="status" class="status">Ready</div>
+      </section>
+    </main>
+
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

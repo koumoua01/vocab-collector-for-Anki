@@ -1,0 +1,41 @@
+{
+  "manifest_version": 2,
+  "name": "Vocab Collector for Anki",
+  "version": "0.1.0",
+  "description": "Collect words from the web and save to Anki via AnkiConnect.",
+  "browser_action": {
+    "default_title": "Collect Vocab",
+    "default_popup": "popup/popup.html"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "scripts": ["background/background.js"],
+    "persistent": false
+  },
+  "permissions": [
+    "storage",
+    "activeTab",
+    "tabs",
+    "contextMenus",
+    "http://127.0.0.1:8765/",
+    "http://localhost:8765/",
+    "https://api.dictionaryapi.dev/*",
+    "https://openrouter.ai/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "applications": {
+    "gecko": {
+      "id": "vocab-collector@local",
+      "strict_min_version": "109.0"
+    }
+  }
+}
