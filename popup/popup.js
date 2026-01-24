@@ -84,11 +84,22 @@ function renderHistory(items) {
 
   items.forEach((item) => {
     const li = document.createElement("li");
-    li.innerHTML = `
-      <div><strong>${item.term || ""}</strong></div>
-      <div class="meta">${item.definition || ""}</div>
-      <div class="meta">${item.source || ""}</div>
-    `;
+    const title = document.createElement("div");
+    const strong = document.createElement("strong");
+    strong.textContent = item.term || "";
+    title.appendChild(strong);
+
+    const definition = document.createElement("div");
+    definition.className = "meta";
+    definition.textContent = item.definition || "";
+
+    const source = document.createElement("div");
+    source.className = "meta";
+    source.textContent = item.source || "";
+
+    li.appendChild(title);
+    li.appendChild(definition);
+    li.appendChild(source);
     historyList.appendChild(li);
   });
 }
