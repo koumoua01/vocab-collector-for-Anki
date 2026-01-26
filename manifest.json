@@ -1,11 +1,23 @@
 {
   "manifest_version": 2,
   "name": "Vocab Collector for Anki",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Collect words from the web and save to Anki via AnkiConnect.",
   "browser_action": {
     "default_title": "Collect Vocab",
-    "default_popup": "popup/popup.html"
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon.svg",
+      "32": "icons/icon.svg",
+      "48": "icons/icon.svg",
+      "128": "icons/icon.svg"
+    }
+  },
+  "icons": {
+    "16": "icons/icon.svg",
+    "32": "icons/icon.svg",
+    "48": "icons/icon.svg",
+    "128": "icons/icon.svg"
   },
   "options_ui": {
     "page": "options/options.html",

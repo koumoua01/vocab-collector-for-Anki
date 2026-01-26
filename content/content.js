@@ -90,30 +90,97 @@ function createPopover(selection) {
   ].join(";");
 
   popover.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-      <div style="font-weight:600;font-size:14px;">Vocab Collector</div>
-      <button id="vc-close" style="background:transparent;border:none;color:#93c5fd;cursor:pointer;">✕</button>
-    </div>
-    <label style="display:grid;gap:6px;font-size:12px;">
-      Term
-      <input id="vc-term" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
-    </label>
-    <label style="display:grid;gap:6px;font-size:12px;">
-      Definition
-      <textarea id="vc-definition" rows="3" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
-    </label>
-    <label style="display:grid;gap:6px;font-size:12px;">
-      Example
-      <textarea id="vc-example" rows="2" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
-    </label>
-    <div style="font-size:11px;color:#94a3b8;">
-      Source: <a id="vc-source" href="#" target="_blank" style="color:#93c5fd;text-decoration:none;"></a>
-    </div>
-    <div id="vc-status" style="font-size:11px;color:#cbd5f5;">Ready</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-      <button id="vc-ai" style="background:#1f2937;color:#e2e8f0;border:1px solid #334155;border-radius:8px;padding:8px;cursor:pointer;">AI Define</button>
-      <button id="vc-save" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:8px;cursor:pointer;">Save</button>
-      <button id="vc-dismiss" style="background:transparent;color:#93c5fd;border:1px solid #334155;border-radius:8px;padding:8px;cursor:pointer;">Dismiss</button>
+    <style>
+      .vc-root, .vc-root * {
+        box-sizing: border-box;
+        font-family: "Segoe UI", system-ui, sans-serif;
+      }
+      .vc-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .vc-title {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .vc-close {
+        all: unset;
+        cursor: pointer;
+        color: #93c5fd;
+        font-size: 14px;
+        line-height: 1;
+        padding: 2px;
+        border-radius: 6px;
+      }
+      .vc-close:focus-visible {
+        outline: 2px solid #93c5fd;
+        outline-offset: 2px;
+      }
+      .vc-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+        gap: 8px;
+      }
+      .vc-button {
+        all: unset;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        line-height: 1;
+        cursor: pointer;
+        border: 1px solid transparent;
+        text-align: center;
+      }
+      .vc-button:focus-visible {
+        outline: 2px solid #93c5fd;
+        outline-offset: 2px;
+      }
+      .vc-button--secondary {
+        background: #1f2937;
+        color: #e2e8f0;
+        border-color: #334155;
+      }
+      .vc-button--primary {
+        background: #2563eb;
+        color: #fff;
+      }
+      .vc-button--ghost {
+        background: transparent;
+        color: #93c5fd;
+        border-color: #334155;
+      }
+    </style>
+    <div class="vc-root">
+      <div class="vc-header">
+        <div class="vc-title">Vocab Collector</div>
+        <button id="vc-close" class="vc-close" type="button" aria-label="Close">✕</button>
+      </div>
+      <label style="display:grid;gap:6px;font-size:12px;">
+        Term
+        <input id="vc-term" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
+      </label>
+      <label style="display:grid;gap:6px;font-size:12px;">
+        Definition
+        <textarea id="vc-definition" rows="3" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+      </label>
+      <label style="display:grid;gap:6px;font-size:12px;">
+        Example
+        <textarea id="vc-example" rows="2" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+      </label>
+      <div style="font-size:11px;color:#94a3b8;">
+        Source: <a id="vc-source" href="#" target="_blank" style="color:#93c5fd;text-decoration:none;"></a>
+      </div>
+      <div id="vc-status" style="font-size:11px;color:#cbd5f5;">Ready</div>
+      <div class="vc-actions">
+        <button id="vc-ai" class="vc-button vc-button--secondary" type="button">AI Define</button>
+        <button id="vc-save" class="vc-button vc-button--primary" type="button">Save</button>
+        <button id="vc-dismiss" class="vc-button vc-button--ghost" type="button">Dismiss</button>
+      </div>
     </div>
   `;
 
