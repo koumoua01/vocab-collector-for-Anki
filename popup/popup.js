@@ -24,6 +24,8 @@ const form = document.getElementById("card-form");
 const formFields = {
   term: document.getElementById("term"),
   definition: document.getElementById("definition"),
+  pos: document.getElementById("pos"),
+  synonyms: document.getElementById("synonyms"),
   example: document.getElementById("example"),
   source: document.getElementById("source"),
   tags: document.getElementById("tags"),
@@ -48,6 +50,8 @@ function setStatus(text, tone = "info") {
 function populateForm(data) {
   if (!data) return;
   if (data.text && !formFields.term.value) formFields.term.value = data.text;
+  if (data.pos && !formFields.pos.value) formFields.pos.value = data.pos;
+  if (data.synonyms && !formFields.synonyms.value) formFields.synonyms.value = data.synonyms;
   if (data.sentence && !formFields.example.value) formFields.example.value = data.sentence;
   if (data.url && !formFields.source.value) formFields.source.value = data.url;
   if (data.tags && !formFields.tags.value) formFields.tags.value = data.tags;
@@ -59,6 +63,8 @@ function getFormData() {
   return {
     term: formFields.term.value.trim(),
     definition: formFields.definition.value.trim(),
+    pos: formFields.pos.value.trim(),
+    synonyms: formFields.synonyms.value.trim(),
     example: formFields.example.value.trim(),
     source: formFields.source.value.trim(),
     tags: formFields.tags.value.trim(),
@@ -183,6 +189,12 @@ autoDefineButton.addEventListener("click", async () => {
         formFields.definition.value = result;
       } else {
         formFields.definition.value = result.definition || "";
+        if (result.pos) {
+          formFields.pos.value = result.pos;
+        }
+        if (result.synonyms) {
+          formFields.synonyms.value = result.synonyms;
+        }
         if (result.example && !formFields.example.value) {
           formFields.example.value = result.example;
         }
@@ -234,10 +246,18 @@ form.addEventListener("submit", async (event) => {
   const fields = {
     [settings.fieldMapping.front || "Front"]: data.term,
     [settings.fieldMapping.back || "Back"]: data.definition || "",
+    ...(settings.fieldMapping.pos ? { [settings.fieldMapping.pos]: data.pos } : {}),
+    ...(settings.fieldMapping.synonyms ? { [settings.fieldMapping.synonyms]: data.synonyms } : {}),
     ...(settings.fieldMapping.example ? { [settings.fieldMapping.example]: data.example } : {}),
     ...(settings.fieldMapping.source ? { [settings.fieldMapping.source]: data.source } : {})
   };
 
+  if (!settings.fieldMapping.pos && data.pos) {
+    fields[settings.fieldMapping.back || "Back"] = `${fields[settings.fieldMapping.back || "Back"]}\n\nPOS: ${data.pos}`.trim();
+  }
+  if (!settings.fieldMapping.synonyms && data.synonyms) {
+    fields[settings.fieldMapping.back || "Back"] = `${fields[settings.fieldMapping.back || "Back"]}\n\nSynonyms: ${data.synonyms}`.trim();
+  }
   if (!settings.fieldMapping.example && data.example) {
     fields[settings.fieldMapping.back || "Back"] = `${fields[settings.fieldMapping.back || "Back"]}\n\nExample: ${data.example}`.trim();
   }

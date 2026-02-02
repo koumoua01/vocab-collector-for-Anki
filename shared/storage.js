@@ -7,6 +7,8 @@ export const DEFAULT_SETTINGS = {
   fieldMapping: {
     front: "Front",
     back: "Back",
+    pos: "",
+    synonyms: "",
     example: "",
     source: "",
     key: "",

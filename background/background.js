@@ -41,6 +41,16 @@ async function addNoteToAnki(payload) {
   if (fieldMapping.key) {
     fields[fieldMapping.key] = payload.key || "";
   }
+  if (fieldMapping.pos) {
+    fields[fieldMapping.pos] = payload.pos || "";
+  } else if (payload.pos) {
+    fields[fieldMapping.back || "Back"] = `${fields[fieldMapping.back || "Back"]}\n\nPOS: ${payload.pos}`.trim();
+  }
+  if (fieldMapping.synonyms) {
+    fields[fieldMapping.synonyms] = payload.synonyms || "";
+  } else if (payload.synonyms) {
+    fields[fieldMapping.back || "Back"] = `${fields[fieldMapping.back || "Back"]}\n\nSynonyms: ${payload.synonyms}`.trim();
+  }
   if (fieldMapping.word) {
     fields[fieldMapping.word] = payload.word || payload.term || "";
   }
@@ -123,11 +133,11 @@ async function aiDefine(term) {
         {
           role: "system",
           content:
-            "You are a dictionary assistant. Provide a clear definition and one short example sentence. Respond in JSON with keys: definition, example. Keep both concise."
+            "You are a dictionary assistant. Provide a clear definition, the part of speech, a few synonyms, and one short example sentence. Respond in JSON with keys: definition, pos, synonyms, example. Keep everything concise."
         },
         {
           role: "user",
-          content: `Define the term and provide an example: ${term}`
+          content: `Define the term, provide part of speech, synonyms, and an example: ${term}`
         }
       ],
       max_tokens: 180,
@@ -151,18 +161,32 @@ async function aiDefine(term) {
   }
   let parsed = null;
   try {
-    parsed = JSON.parse(text);
+    let jsonText = text;
+    const fencedMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    if (fencedMatch && fencedMatch[1]) {
+      jsonText = fencedMatch[1].trim();
+    }
+    parsed = JSON.parse(jsonText);
   } catch (error) {
     parsed = null;
   }
   if (parsed && (parsed.definition || parsed.example)) {
+    const normalizeValue = (value) => {
+      if (Array.isArray(value)) return value.map(String).join(", ");
+      if (value === null || value === undefined) return "";
+      return String(value);
+    };
     return {
-      definition: String(parsed.definition || "").trim(),
-      example: String(parsed.example || "").trim()
+      definition: normalizeValue(parsed.definition).trim(),
+      pos: normalizeValue(parsed.pos).trim(),
+      synonyms: normalizeValue(parsed.synonyms).trim(),
+      example: normalizeValue(parsed.example).trim()
     };
   }
   return {
     definition: text,
+    pos: "",
+    synonyms: "",
     example: ""
   };
 }

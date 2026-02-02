@@ -169,6 +169,14 @@ function createPopover(selection) {
         <textarea id="vc-definition" rows="3" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
       </label>
       <label style="display:grid;gap:6px;font-size:12px;">
+        Part of Speech
+        <input id="vc-pos" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
+      </label>
+      <label style="display:grid;gap:6px;font-size:12px;">
+        Synonyms
+        <textarea id="vc-synonyms" rows="2" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+      </label>
+      <label style="display:grid;gap:6px;font-size:12px;">
         Example
         <textarea id="vc-example" rows="2" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
       </label>
@@ -189,9 +197,13 @@ function createPopover(selection) {
 
   const termInput = popover.querySelector("#vc-term");
   const definitionInput = popover.querySelector("#vc-definition");
+  const posInput = popover.querySelector("#vc-pos");
+  const synonymsInput = popover.querySelector("#vc-synonyms");
   const exampleInput = popover.querySelector("#vc-example");
   const sourceLink = popover.querySelector("#vc-source");
   const statusEl = popover.querySelector("#vc-status");
+  let aiPos = "";
+  let aiSynonyms = "";
 
   termInput.value = selection.text || "";
   exampleInput.value = selection.sentence || "";
@@ -212,8 +224,16 @@ function createPopover(selection) {
       const result = await callBackground({ type: "AI_DEFINE", term });
       if (typeof result === "string") {
         definitionInput.value = result;
+        aiPos = "";
+        aiSynonyms = "";
+        posInput.value = "";
+        synonymsInput.value = "";
       } else {
         definitionInput.value = result.definition || "";
+        aiPos = result.pos || "";
+        aiSynonyms = result.synonyms || "";
+        posInput.value = aiPos;
+        synonymsInput.value = aiSynonyms;
         if (result.example && !exampleInput.value) {
           exampleInput.value = result.example;
         }
@@ -229,6 +249,8 @@ function createPopover(selection) {
       term: termInput.value.trim(),
       definition: definitionInput.value.trim(),
       example: exampleInput.value.trim(),
+      pos: aiPos,
+      synonyms: aiSynonyms,
       source: selection.url || "",
       context: exampleInput.value.trim(),
       frontContext: `${termInput.value.trim()}\n${exampleInput.value.trim()}`.trim(),

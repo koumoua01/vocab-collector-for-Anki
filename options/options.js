@@ -17,6 +17,8 @@ const fields = {
   openRouterModel: document.getElementById("openrouter-model"),
   fieldFront: document.getElementById("field-front"),
   fieldBack: document.getElementById("field-back"),
+  fieldPos: document.getElementById("field-pos"),
+  fieldSynonyms: document.getElementById("field-synonyms"),
   fieldExample: document.getElementById("field-example"),
   fieldSource: document.getElementById("field-source"),
   fieldKey: document.getElementById("field-key"),
@@ -58,6 +60,8 @@ async function loadSettings() {
   fields.openRouterModel.value = settings.openRouterModel || "openrouter/auto";
   fields.fieldFront.value = settings.fieldMapping.front || "Front";
   fields.fieldBack.value = settings.fieldMapping.back || "Back";
+  fields.fieldPos.value = settings.fieldMapping.pos || "";
+  fields.fieldSynonyms.value = settings.fieldMapping.synonyms || "";
   fields.fieldExample.value = settings.fieldMapping.example || "";
   fields.fieldSource.value = settings.fieldMapping.source || "";
   fields.fieldKey.value = settings.fieldMapping.key || "";
@@ -92,6 +96,8 @@ function collectSettings() {
     fieldMapping: {
       front: fields.fieldFront.value.trim() || "Front",
       back: fields.fieldBack.value.trim() || "Back",
+      pos: fields.fieldPos.value.trim(),
+      synonyms: fields.fieldSynonyms.value.trim(),
       example: fields.fieldExample.value.trim(),
       source: fields.fieldSource.value.trim(),
       key: fields.fieldKey.value.trim(),
