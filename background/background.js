@@ -124,6 +124,7 @@ async function addNoteToAnki(payload) {
     word: "Word",
     phonetic: "Phonetic",
     origin: "Origin",
+    otherForms: "OtherForms",
     partOfSpeech: "PartOfSpeech",
     definitions: "Definitions",
     dictExample: "DictExample",
@@ -136,6 +137,7 @@ async function addNoteToAnki(payload) {
   const wordField = fieldMapping.word || fieldMapping.front || "Word";
   const phoneticField = fieldMapping.phonetic || "Phonetic";
   const originField = fieldMapping.origin || "Origin";
+  const otherFormsField = fieldMapping.otherForms || "OtherForms";
   const partOfSpeechField = fieldMapping.partOfSpeech || fieldMapping.pos || "PartOfSpeech";
   const definitionsField = fieldMapping.definitions || fieldMapping.back || "Definitions";
   const dictExampleField = fieldMapping.dictExample || "DictExample";
@@ -153,6 +155,7 @@ async function addNoteToAnki(payload) {
     [antonymsField]: payload.antonyms || "",
     [phoneticField]: payload.phonetic || "",
     [originField]: payload.origin || "",
+    [otherFormsField]: payload.otherForms || payload.otherForm || "",
     [sourceExampleField]: payload.sourceExample || payload.example || "",
     [sourceField]: payload.source || ""
   };
@@ -230,11 +233,11 @@ async function aiDefine(term) {
         {
           role: "system",
           content:
-            "You are a dictionary assistant. Provide concise data and respond in JSON. Keys: definitions, partOfSpeech, synonyms, antonyms, dictExample, phonetic, origin. Format definitions as a single string where each line begins with [part of speech], e.g. [noun] ... Keep values short."
+            "You are a dictionary assistant. Respond ONLY with a single JSON object. Keys: definitions, partOfSpeech, synonyms, antonyms, dictExample, phonetic, origin, otherForms. Use strings for all values. Format definitions as a single string with one line per sense, each line beginning with [part of speech], e.g. [noun] ... Keep values short. If unknown, return an empty string. otherForms should be a short comma-separated list of common inflections or variants if relevant."
         },
         {
           role: "user",
-          content: `Define the word and return the JSON fields for: definitions, partOfSpeech, synonyms, antonyms, dictExample, phonetic, origin. Ensure definitions are prefixed with [part of speech]. Word: ${term}`
+          content: `Return the JSON object for the word: ${term}`
         }
       ],
       max_tokens: 180,
@@ -256,14 +259,25 @@ async function aiDefine(term) {
   if (!text) {
     throw new Error("No definition returned");
   }
+  const extractJson = (value) => {
+    if (!value) return null;
+    const fencedMatch = value.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+    if (fencedMatch && fencedMatch[1]) {
+      return fencedMatch[1].trim();
+    }
+    const firstBrace = value.indexOf("{");
+    const lastBrace = value.lastIndexOf("}");
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      return value.slice(firstBrace, lastBrace + 1).trim();
+    }
+    return null;
+  };
   let parsed = null;
   try {
-    let jsonText = text;
-    const fencedMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-    if (fencedMatch && fencedMatch[1]) {
-      jsonText = fencedMatch[1].trim();
+    const jsonText = extractJson(text);
+    if (jsonText) {
+      parsed = JSON.parse(jsonText);
     }
-    parsed = JSON.parse(jsonText);
   } catch (error) {
     parsed = null;
   }
@@ -280,7 +294,8 @@ async function aiDefine(term) {
       antonyms: normalizeValue(parsed.antonyms).trim(),
       dictExample: normalizeValue(parsed.dictExample ?? parsed.sourceExample ?? parsed.example).trim(),
       phonetic: normalizeValue(parsed.phonetic).trim(),
-      origin: normalizeValue(parsed.origin).trim()
+      origin: normalizeValue(parsed.origin).trim(),
+      otherForms: normalizeValue(parsed.otherForms ?? parsed.otherForm ?? parsed.inflections).trim()
     };
   }
   return {
@@ -290,7 +305,8 @@ async function aiDefine(term) {
     antonyms: "",
     dictExample: "",
     phonetic: "",
-    origin: ""
+    origin: "",
+    otherForms: ""
   };
 }
 

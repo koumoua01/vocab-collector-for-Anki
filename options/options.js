@@ -23,6 +23,7 @@ const fields = {
   fieldWord: document.getElementById("field-word"),
   fieldPhonetic: document.getElementById("field-phonetic"),
   fieldOrigin: document.getElementById("field-origin"),
+  fieldOtherForms: document.getElementById("field-other-forms"),
   fieldPartOfSpeech: document.getElementById("field-part-of-speech"),
   fieldDefinitions: document.getElementById("field-definitions"),
   fieldDictExample: document.getElementById("field-dict-example"),
@@ -75,6 +76,7 @@ async function loadSettings() {
   fields.fieldWord.value = settings.fieldMapping.word || settings.fieldMapping.front || "Word";
   fields.fieldPhonetic.value = settings.fieldMapping.phonetic || "Phonetic";
   fields.fieldOrigin.value = settings.fieldMapping.origin || "Origin";
+  fields.fieldOtherForms.value = settings.fieldMapping.otherForms || "OtherForms";
   fields.fieldPartOfSpeech.value = settings.fieldMapping.partOfSpeech || settings.fieldMapping.pos || "PartOfSpeech";
   fields.fieldDefinitions.value = settings.fieldMapping.definitions || settings.fieldMapping.back || "Definitions";
   fields.fieldDictExample.value = settings.fieldMapping.dictExample || "DictExample";
@@ -114,6 +116,7 @@ function collectSettings() {
       word: fields.fieldWord.value.trim() || "Word",
       phonetic: fields.fieldPhonetic.value.trim() || "Phonetic",
       origin: fields.fieldOrigin.value.trim() || "Origin",
+      otherForms: fields.fieldOtherForms.value.trim() || "OtherForms",
       partOfSpeech: fields.fieldPartOfSpeech.value.trim() || "PartOfSpeech",
       definitions: fields.fieldDefinitions.value.trim() || "Definitions",
       dictExample: fields.fieldDictExample.value.trim() || "DictExample",

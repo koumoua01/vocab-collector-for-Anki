@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS = {
     word: "Word",
     phonetic: "Phonetic",
     origin: "Origin",
+    otherForms: "OtherForms",
     partOfSpeech: "PartOfSpeech",
     definitions: "Definitions",
     dictExample: "DictExample",
