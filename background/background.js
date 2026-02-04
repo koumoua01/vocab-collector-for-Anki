@@ -11,7 +11,107 @@ async function setBadge(text) {
 
 async function getSettings() {
   const result = await api.storage.local.get(["settings"]);
-  return result.settings || {};
+  const defaults = {
+    ankiConnectUrl: "http://127.0.0.1:8765",
+    deckName: "Default",
+    modelName: "Basic",
+    enableDoubleClick: true,
+    definitionProvider: "dictionaryapi"
+  };
+  return { ...defaults, ...(result.settings || {}) };
+}
+
+async function ankiInvoke(action, params, ankiConnectUrl) {
+  const response = await fetch(ankiConnectUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, version: 6, params })
+  });
+
+  if (!response.ok) {
+    throw new Error(`AnkiConnect HTTP ${response.status}`);
+  }
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error);
+  }
+  return data.result;
+}
+
+async function modelFieldNames(modelName, ankiConnectUrl) {
+  return ankiInvoke("modelFieldNames", { modelName }, ankiConnectUrl);
+}
+
+async function modelFieldAdd(modelName, fieldName, ankiConnectUrl) {
+  return ankiInvoke("modelFieldAdd", { modelName, fieldName }, ankiConnectUrl);
+}
+
+async function ensureModelFields(modelName, fieldNames, ankiConnectUrl) {
+  if (!modelName || !Array.isArray(fieldNames) || !fieldNames.length) return;
+  
+  // 1. Check if model exists, if not create it
+  const models = await ankiInvoke("modelNames", {}, ankiConnectUrl);
+  if (!models.includes(modelName)) {
+    // Create new model with these fields
+    const frontField = fieldNames[0];
+    const backFields = fieldNames.slice(1);
+    
+    // Simple default styling
+    const css = `.card { font-family: arial; font-size: 20px; text-align: center; color: black; background-color: white; }
+.field { margin-bottom: 10px; }
+.field-name { font-size: 12px; color: #666; }`;
+
+    const frontTemplate = `{{${frontField}}}`;
+    let backTemplate = `{{FrontSide}}\n<hr id=answer>`;
+    
+    backFields.forEach(f => {
+      backTemplate += `\n{{#${f}}}<div class="field"><div class="field-name">${f}</div><div>{{${f}}}</div></div>{{/${f}}}`;
+    });
+
+    await ankiInvoke("createModel", {
+      modelName,
+      inOrderFields: fieldNames,
+      css,
+      cardTemplates: [
+        {
+          Name: "Card 1",
+          Front: frontTemplate,
+          Back: backTemplate
+        }
+      ]
+    }, ankiConnectUrl);
+    return; // Created with all fields, no need to add fields
+  }
+
+  // 2. If model exists, ensure all fields exist
+  const existing = await modelFieldNames(modelName, ankiConnectUrl);
+  const existingSet = new Set((existing || []).map((name) => String(name)));
+  const missing = fieldNames.filter((name) => name && !existingSet.has(name));
+  for (const fieldName of missing) {
+    await modelFieldAdd(modelName, fieldName, ankiConnectUrl);
+  }
+}
+
+async function ensureDeck(deckName, ankiConnectUrl) {
+  if (!deckName) return;
+  const decks = await ankiInvoke("deckNames", {}, ankiConnectUrl);
+  if (!decks.includes(deckName)) {
+    await ankiInvoke("createDeck", { deck: deckName }, ankiConnectUrl);
+  }
+}
+
+async function addToHistory(payload) {
+  const item = {
+    word: payload.word || payload.term || "",
+    definitions: payload.definitions || payload.definition || "",
+    source: payload.source || "",
+    createdAt: new Date().toISOString()
+  };
+  const result = await api.storage.local.get(["history"]);
+  const history = Array.isArray(result.history) ? result.history : [];
+  history.unshift(item);
+  const trimmed = history.slice(0, 50);
+  await api.storage.local.set({ history: trimmed });
 }
 
 async function addNoteToAnki(payload) {
@@ -20,52 +120,47 @@ async function addNoteToAnki(payload) {
   const deckName = payload.deck || settings.deckName || "Default";
   const modelName = payload.model || settings.modelName || "Basic";
   const tags = payload.tags || settings.tags || "vocab";
-  const fieldMapping = settings.fieldMapping || { front: "Front", back: "Back" };
-
-  const fields = {
-    [fieldMapping.front || "Front"]: payload.term || "",
-    [fieldMapping.back || "Back"]: payload.definition || ""
+  const fieldMapping = settings.fieldMapping || {
+    word: "Word",
+    phonetic: "Phonetic",
+    origin: "Origin",
+    partOfSpeech: "PartOfSpeech",
+    definitions: "Definitions",
+    dictExample: "DictExample",
+    synonyms: "Synonyms",
+    antonyms: "Antonyms",
+    sourceExample: "SourceExample",
+    source: "Source"
   };
 
-  if (fieldMapping.example) {
-    fields[fieldMapping.example] = payload.example || "";
-  } else if (payload.example) {
-    fields[fieldMapping.back || "Back"] = `${fields[fieldMapping.back || "Back"]}\n\nExample: ${payload.example}`.trim();
-  }
-  if (fieldMapping.source) {
-    fields[fieldMapping.source] = payload.source || "";
-  } else if (payload.source) {
-    fields[fieldMapping.back || "Back"] = `${fields[fieldMapping.back || "Back"]}\n\nSource: ${payload.source}`.trim();
-  }
+  const wordField = fieldMapping.word || fieldMapping.front || "Word";
+  const phoneticField = fieldMapping.phonetic || "Phonetic";
+  const originField = fieldMapping.origin || "Origin";
+  const partOfSpeechField = fieldMapping.partOfSpeech || fieldMapping.pos || "PartOfSpeech";
+  const definitionsField = fieldMapping.definitions || fieldMapping.back || "Definitions";
+  const dictExampleField = fieldMapping.dictExample || "DictExample";
+  const synonymsField = fieldMapping.synonyms || "Synonyms";
+  const antonymsField = fieldMapping.antonyms || "Antonyms";
+  const sourceExampleField = fieldMapping.sourceExample || fieldMapping.example || "SourceExample";
+  const sourceField = fieldMapping.source || "Source";
 
-  if (fieldMapping.key) {
-    fields[fieldMapping.key] = payload.key || "";
-  }
-  if (fieldMapping.pos) {
-    fields[fieldMapping.pos] = payload.pos || "";
-  } else if (payload.pos) {
-    fields[fieldMapping.back || "Back"] = `${fields[fieldMapping.back || "Back"]}\n\nPOS: ${payload.pos}`.trim();
-  }
-  if (fieldMapping.synonyms) {
-    fields[fieldMapping.synonyms] = payload.synonyms || "";
-  } else if (payload.synonyms) {
-    fields[fieldMapping.back || "Back"] = `${fields[fieldMapping.back || "Back"]}\n\nSynonyms: ${payload.synonyms}`.trim();
-  }
-  if (fieldMapping.word) {
-    fields[fieldMapping.word] = payload.word || payload.term || "";
-  }
-  if (fieldMapping.context) {
-    fields[fieldMapping.context] = payload.context || payload.example || "";
-  }
-  if (fieldMapping.frontContext) {
-    const frontContextValue = payload.frontContext || payload.example || payload.term || "";
-    fields[fieldMapping.frontContext] = frontContextValue;
-  }
-  if (fieldMapping.backDefOnly) {
-    fields[fieldMapping.backDefOnly] = payload.backDefOnly || payload.definition || "";
-  }
-  if (fieldMapping.reverse) {
-    fields[fieldMapping.reverse] = payload.reverse || "";
+  const fields = {
+    [wordField]: payload.word || payload.term || "",
+    [definitionsField]: payload.definitions || payload.definition || "",
+    [dictExampleField]: payload.dictExample || payload.example || "",
+    [partOfSpeechField]: payload.partOfSpeech || payload.pos || "",
+    [synonymsField]: payload.synonyms || "",
+    [antonymsField]: payload.antonyms || "",
+    [phoneticField]: payload.phonetic || "",
+    [originField]: payload.origin || "",
+    [sourceExampleField]: payload.sourceExample || payload.example || "",
+    [sourceField]: payload.source || ""
+  };
+
+  await ensureDeck(deckName, ankiConnectUrl);
+
+  if (settings.autoAddFields !== false) {
+    await ensureModelFields(modelName, Object.keys(fields), ankiConnectUrl);
   }
 
   const response = await fetch(ankiConnectUrl, {
@@ -95,6 +190,8 @@ async function addNoteToAnki(payload) {
   if (data.error) {
     throw new Error(data.error);
   }
+
+  await addToHistory(payload);
   return data.result;
 }
 
@@ -133,11 +230,11 @@ async function aiDefine(term) {
         {
           role: "system",
           content:
-            "You are a dictionary assistant. Provide a clear definition, the part of speech, a few synonyms, and one short example sentence. Respond in JSON with keys: definition, pos, synonyms, example. Keep everything concise."
+            "You are a dictionary assistant. Provide concise data and respond in JSON. Keys: definitions, partOfSpeech, synonyms, antonyms, dictExample, phonetic, origin. Format definitions as a single string where each line begins with [part of speech], e.g. [noun] ... Keep values short."
         },
         {
           role: "user",
-          content: `Define the term, provide part of speech, synonyms, and an example: ${term}`
+          content: `Define the word and return the JSON fields for: definitions, partOfSpeech, synonyms, antonyms, dictExample, phonetic, origin. Ensure definitions are prefixed with [part of speech]. Word: ${term}`
         }
       ],
       max_tokens: 180,
@@ -170,25 +267,179 @@ async function aiDefine(term) {
   } catch (error) {
     parsed = null;
   }
-  if (parsed && (parsed.definition || parsed.example)) {
+  if (parsed && (parsed.definition || parsed.definitions || parsed.example || parsed.sourceExample || parsed.dictExample)) {
     const normalizeValue = (value) => {
       if (Array.isArray(value)) return value.map(String).join(", ");
       if (value === null || value === undefined) return "";
       return String(value);
     };
     return {
-      definition: normalizeValue(parsed.definition).trim(),
-      pos: normalizeValue(parsed.pos).trim(),
+      definitions: normalizeValue(parsed.definitions ?? parsed.definition).trim(),
+      partOfSpeech: normalizeValue(parsed.partOfSpeech ?? parsed.pos).trim(),
       synonyms: normalizeValue(parsed.synonyms).trim(),
-      example: normalizeValue(parsed.example).trim()
+      antonyms: normalizeValue(parsed.antonyms).trim(),
+      dictExample: normalizeValue(parsed.dictExample ?? parsed.sourceExample ?? parsed.example).trim(),
+      phonetic: normalizeValue(parsed.phonetic).trim(),
+      origin: normalizeValue(parsed.origin).trim()
     };
   }
   return {
-    definition: text,
-    pos: "",
+    definitions: text,
+    partOfSpeech: "",
     synonyms: "",
-    example: ""
+    antonyms: "",
+    dictExample: "",
+    phonetic: "",
+    origin: ""
   };
+}
+
+function isLikelyNonEnglish(term) {
+  if (!term) return false;
+  return /[^A-Za-z\s'-]/.test(term);
+}
+
+function normalizeDictionaryResult(entry) {
+  if (!entry) return null;
+  const meanings = Array.isArray(entry.meanings) ? entry.meanings : [];
+  const definitionLines = meanings.flatMap((meaning) => {
+    const pos = meaning.partOfSpeech ? `[${meaning.partOfSpeech}] ` : "";
+    const defs = Array.isArray(meaning.definitions) ? meaning.definitions : [];
+    return defs.map((def) => (def?.definition ? `${pos}${def.definition}` : "")).filter(Boolean);
+  });
+  const examples = meanings
+    .flatMap((meaning) => (Array.isArray(meaning.definitions) ? meaning.definitions : []))
+    .map((def) => def?.example)
+    .filter(Boolean);
+  const partOfSpeech = meanings.map((meaning) => meaning.partOfSpeech).filter(Boolean).join(", ");
+  const synonyms = meanings.flatMap((meaning) => meaning.synonyms || []).filter(Boolean);
+  const antonyms = meanings.flatMap((meaning) => meaning.antonyms || []).filter(Boolean);
+  const phonetic = entry.phonetic || entry.phonetics?.find((item) => item?.text)?.text || "";
+  const origin = entry.origin || "";
+  const dictExample = examples[0] || "";
+  const result = {
+    word: entry.word || "",
+    phonetic,
+    origin,
+    partOfSpeech,
+    definitions: definitionLines.join("\n") || "",
+    synonyms: Array.from(new Set(synonyms)).join(", "),
+    antonyms: Array.from(new Set(antonyms)).join(", "),
+    dictExample
+  };
+  if (!result.definitions && !result.dictExample && !result.partOfSpeech && !result.synonyms) return null;
+  return result;
+}
+
+async function dictionaryDefine(term) {
+  const response = await fetch(
+    `https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(term)}`
+  );
+  if (!response.ok) {
+    throw new Error(`Dictionary HTTP ${response.status}`);
+  }
+  const data = await response.json();
+  const result = normalizeDictionaryResult(data?.[0]);
+  if (!result) {
+    throw new Error("No definition found");
+  }
+  return result;
+}
+
+function normalizeWiktionaryResult(languageBlock) {
+  if (!languageBlock || !Array.isArray(languageBlock)) return null;
+  const definitionLines = [];
+  const synonyms = [];
+  const antonyms = [];
+  const examples = [];
+  const parts = [];
+
+  languageBlock.forEach((entry) => {
+    const pos = entry?.partOfSpeech ? `[${entry.partOfSpeech}] ` : "";
+    if (entry?.partOfSpeech) parts.push(entry.partOfSpeech);
+    const defs = Array.isArray(entry?.definitions) ? entry.definitions : [];
+    defs.forEach((def) => {
+      if (def?.definition) {
+        definitionLines.push(`${pos}${def.definition}`);
+      }
+      if (def?.example) examples.push(def.example);
+      if (Array.isArray(def?.synonyms)) synonyms.push(...def.synonyms);
+      if (Array.isArray(def?.antonyms)) antonyms.push(...def.antonyms);
+    });
+  });
+
+  const result = {
+    partOfSpeech: Array.from(new Set(parts)).join(", "),
+    definitions: definitionLines.join("\n"),
+    synonyms: Array.from(new Set(synonyms.filter(Boolean))).join(", "),
+    antonyms: Array.from(new Set(antonyms.filter(Boolean))).join(", "),
+    dictExample: examples[0] || "",
+    phonetic: "",
+    origin: ""
+  };
+
+  if (!result.definitions && !result.dictExample && !result.partOfSpeech && !result.synonyms) return null;
+  return result;
+}
+
+async function wiktionaryDefine(term) {
+  const response = await fetch(
+    `https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(term)}`
+  );
+  if (!response.ok) {
+    throw new Error(`Wiktionary HTTP ${response.status}`);
+  }
+  const data = await response.json();
+  const languageBlock = data?.en || data?.["en"] || data?.[Object.keys(data || {})[0]];
+  const result = normalizeWiktionaryResult(languageBlock);
+  if (!result) {
+    throw new Error("No definition found");
+  }
+  return result;
+}
+
+async function defineWithProvider(provider, term) {
+  if (provider === "ai") return aiDefine(term);
+  if (provider === "wiktionary") return wiktionaryDefine(term);
+  return dictionaryDefine(term);
+}
+
+async function autoDefine(term, providerOverride) {
+  const settings = await getSettings();
+  const rawProvider = providerOverride || settings.definitionProvider || "dictionaryapi";
+  const provider = rawProvider === "dictionary" ? "dictionaryapi" : rawProvider;
+  const aiAvailable = Boolean(settings.openRouterApiKey);
+  const useAiForNonEnglish = settings.aiNonEnglish !== false;
+  const allowAiFallback = settings.aiFallback !== false;
+  const nonEnglish = useAiForNonEnglish && aiAvailable && isLikelyNonEnglish(term);
+
+  if (provider === "ai") {
+    try {
+      return await aiDefine(term);
+    } catch (error) {
+      if (allowAiFallback) {
+        return defineWithProvider("dictionaryapi", term);
+      }
+      throw error;
+    }
+  }
+
+  if (nonEnglish) {
+    try {
+      return await aiDefine(term);
+    } catch (error) {
+      return defineWithProvider(provider, term);
+    }
+  }
+
+  try {
+    return await defineWithProvider(provider, term);
+  } catch (error) {
+    if (allowAiFallback && aiAvailable) {
+      return aiDefine(term);
+    }
+    throw error;
+  }
 }
 
 api.runtime.onInstalled.addListener(() => {
@@ -202,26 +453,14 @@ api.runtime.onInstalled.addListener(() => {
 api.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId !== "add-to-anki") return;
 
-  let selection = {
-    text: info.selectionText || "",
-    sentence: info.selectionText || "",
-    title: tab?.title || "",
-    url: tab?.url || ""
-  };
-
   if (tab?.id) {
+    // Send message to show popover in the current tab
     try {
-      const response = await api.tabs.sendMessage(tab.id, { type: "GET_SELECTION" });
-      if (response && response.text) {
-        selection = response;
-      }
+       await api.tabs.sendMessage(tab.id, { type: "SHOW_POPOVER" });
     } catch (error) {
-      // ignore missing content script
+       // ignore
     }
   }
-
-  await api.storage.local.set({ draft: selection });
-  await setBadge("1");
 });
 
 api.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -229,6 +468,11 @@ api.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.type === "CLEAR_BADGE") {
     setBadge("").then(() => sendResponse({ ok: true }));
+    return true;
+  }
+
+  if (message.type === "GET_SETTINGS") {
+    getSettings().then((result) => sendResponse({ ok: true, result }));
     return true;
   }
 
@@ -245,4 +489,20 @@ api.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .catch((error) => sendResponse({ ok: false, error: error.message }));
     return true;
   }
+
+  if (message.type === "DICT_DEFINE") {
+    dictionaryDefine(message.term)
+      .then((result) => sendResponse({ ok: true, result }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+  if (message.type === "AUTO_DEFINE") {
+    autoDefine(message.term, message.provider)
+      .then((result) => sendResponse({ ok: true, result }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+    return true;
+  }
+
+
 });

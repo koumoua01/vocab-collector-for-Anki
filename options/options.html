@@ -35,6 +35,19 @@
           <input id="allow-duplicate" type="checkbox" />
           Allow duplicate cards
         </label>
+        <label class="checkbox">
+          <input id="auto-add-fields" type="checkbox" />
+          Auto-add missing fields to Anki model
+        </label>
+      </section>
+
+      <section class="panel">
+        <h2>Appearance & Behavior</h2>
+        <label class="checkbox">
+          <input id="enable-double-click" type="checkbox" />
+          Enable Double Click popover
+        </label>
+        <p style="font-size: 12px; color: #64748b; margin-top: 4px;">You can always use "Right Click > Save vocab to Anki".</p>
       </section>
 
       <section class="panel">
@@ -51,60 +64,73 @@
       </section>
 
       <section class="panel">
+        <h2>Definition Lookup</h2>
+        <p>Use the dictionary by default, and let AI handle non-English or missing entries.</p>
+        <label>
+          Default Provider
+          <select id="definition-provider">
+            <option value="dictionaryapi">DictionaryAPI (recommended)</option>
+            <option value="wiktionary">Wiktionary</option>
+            <option value="ai">AI</option>
+          </select>
+        </label>
+        <label class="checkbox">
+          <input id="ai-fallback" type="checkbox" />
+          Use AI when dictionary has no result
+        </label>
+        <label class="checkbox">
+          <input id="ai-non-english" type="checkbox" />
+          Prefer AI for non-English terms
+        </label>
+      </section>
+
+      <section class="panel">
         <h2>Field Mapping</h2>
         <p>Map vocab fields to your Anki model fields.</p>
         <div class="grid">
           <label>
-            Term (Front)
-            <input id="field-front" type="text" />
+            Word
+            <input id="field-word" type="text" />
           </label>
           <label>
-            Definition (Back)
-            <input id="field-back" type="text" />
+            Phonetic
+            <input id="field-phonetic" type="text" />
           </label>
         </div>
         <div class="grid">
           <label>
+            Origin
+            <input id="field-origin" type="text" placeholder="Optional" />
+          </label>
+          <label>
             Part of Speech
-            <input id="field-pos" type="text" placeholder="Optional" />
+            <input id="field-part-of-speech" type="text" placeholder="Optional" />
+          </label>
+          <label>
+            Definitions
+            <input id="field-definitions" type="text" placeholder="Optional" />
+          </label>
+          <label>
+            Dictionary Example
+            <input id="field-dict-example" type="text" placeholder="Optional" />
           </label>
           <label>
             Synonyms
             <input id="field-synonyms" type="text" placeholder="Optional" />
           </label>
+        </div>
+        <div class="grid">
           <label>
-            Example
-            <input id="field-example" type="text" placeholder="Optional" />
+            Antonyms
+            <input id="field-antonyms" type="text" placeholder="Optional" />
+          </label>
+          <label>
+            Source Example
+            <input id="field-source-example" type="text" placeholder="Optional" />
           </label>
           <label>
             Source URL
             <input id="field-source" type="text" placeholder="Optional" />
-          </label>
-        </div>
-        <div class="grid">
-          <label>
-            Key
-            <input id="field-key" type="text" placeholder="Optional" />
-          </label>
-          <label>
-            Word
-            <input id="field-word" type="text" placeholder="Optional" />
-          </label>
-          <label>
-            Context
-            <input id="field-context" type="text" placeholder="Optional" />
-          </label>
-          <label>
-            FrontContext
-            <input id="field-front-context" type="text" placeholder="Optional" />
-          </label>
-          <label>
-            BackDefOnly
-            <input id="field-back-def-only" type="text" placeholder="Optional" />
-          </label>
-          <label>
-            Reverse
-            <input id="field-reverse" type="text" placeholder="Optional" />
           </label>
         </div>
       </section>

@@ -77,6 +77,8 @@ function createPopover(selection) {
     "right: 24px",
     "width: 340px",
     "max-width: calc(100vw - 48px)",
+    "max-height: calc(100vh - 48px)",
+    "overflow: hidden",
     "z-index: 2147483647",
     "background: #0f172a",
     "color: #e2e8f0",
@@ -155,37 +157,66 @@ function createPopover(selection) {
         border-color: #334155;
       }
     </style>
-    <div class="vc-root">
+    <div class="vc-root" style="max-height: calc(100vh - 80px); overflow: auto; padding-right: 4px;">
       <div class="vc-header">
         <div class="vc-title">Vocab Collector</div>
         <button id="vc-close" class="vc-close" type="button" aria-label="Close">✕</button>
       </div>
       <label style="display:grid;gap:6px;font-size:12px;">
-        Term
-        <input id="vc-term" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
+        Word
+        <input id="vc-word" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
       </label>
       <label style="display:grid;gap:6px;font-size:12px;">
-        Definition
-        <textarea id="vc-definition" rows="3" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+        Definition Source
+        <select id="vc-definition-provider" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;">
+          <option value="dictionaryapi">DictionaryAPI</option>
+          <option value="wiktionary">Wiktionary</option>
+          <option value="ai">AI</option>
+        </select>
       </label>
       <label style="display:grid;gap:6px;font-size:12px;">
-        Part of Speech
-        <input id="vc-pos" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
+        Definitions
+        <textarea id="vc-definitions" rows="4" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
       </label>
-      <label style="display:grid;gap:6px;font-size:12px;">
-        Synonyms
-        <textarea id="vc-synonyms" rows="2" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
-      </label>
-      <label style="display:grid;gap:6px;font-size:12px;">
-        Example
-        <textarea id="vc-example" rows="2" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
-      </label>
+      <details style="margin-top:8px;">
+        <summary style="cursor:pointer;font-size:12px;color:#93c5fd;">More fields</summary>
+        <div style="display:grid;gap:10px;margin-top:10px;">
+          <label style="display:grid;gap:6px;font-size:12px;">
+            Dictionary Example
+            <textarea id="vc-dict-example" rows="2" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+          </label>
+          <label style="display:grid;gap:6px;font-size:12px;">
+            Part of Speech
+            <input id="vc-part-of-speech" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
+          </label>
+          <label style="display:grid;gap:6px;font-size:12px;">
+            Synonyms
+            <textarea id="vc-synonyms" rows="1" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+          </label>
+          <label style="display:grid;gap:6px;font-size:12px;">
+            Antonyms
+            <textarea id="vc-antonyms" rows="1" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+          </label>
+          <label style="display:grid;gap:6px;font-size:12px;">
+            Phonetic
+            <input id="vc-phonetic" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
+          </label>
+          <label style="display:grid;gap:6px;font-size:12px;">
+            Origin
+            <input id="vc-origin" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
+          </label>
+          <label style="display:grid;gap:6px;font-size:12px;">
+            Source Example
+            <textarea id="vc-source-example" rows="2" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+          </label>
+        </div>
+      </details>
       <div style="font-size:11px;color:#94a3b8;">
         Source: <a id="vc-source" href="#" target="_blank" style="color:#93c5fd;text-decoration:none;"></a>
       </div>
       <div id="vc-status" style="font-size:11px;color:#cbd5f5;">Ready</div>
       <div class="vc-actions">
-        <button id="vc-ai" class="vc-button vc-button--secondary" type="button">AI Define</button>
+        <button id="vc-define" class="vc-button vc-button--secondary" type="button">Define</button>
         <button id="vc-save" class="vc-button vc-button--primary" type="button">Save</button>
         <button id="vc-dismiss" class="vc-button vc-button--ghost" type="button">Dismiss</button>
       </div>
@@ -195,47 +226,81 @@ function createPopover(selection) {
   document.body.appendChild(popoverBackdrop);
   document.body.appendChild(popover);
 
-  const termInput = popover.querySelector("#vc-term");
-  const definitionInput = popover.querySelector("#vc-definition");
-  const posInput = popover.querySelector("#vc-pos");
+  const wordInput = popover.querySelector("#vc-word");
+  const definitionsInput = popover.querySelector("#vc-definitions");
+  const dictExampleInput = popover.querySelector("#vc-dict-example");
+  const definitionProviderSelect = popover.querySelector("#vc-definition-provider");
+  const partOfSpeechInput = popover.querySelector("#vc-part-of-speech");
   const synonymsInput = popover.querySelector("#vc-synonyms");
-  const exampleInput = popover.querySelector("#vc-example");
+  const antonymsInput = popover.querySelector("#vc-antonyms");
+  const phoneticInput = popover.querySelector("#vc-phonetic");
+  const originInput = popover.querySelector("#vc-origin");
+  const sourceExampleInput = popover.querySelector("#vc-source-example");
   const sourceLink = popover.querySelector("#vc-source");
   const statusEl = popover.querySelector("#vc-status");
-  let aiPos = "";
-  let aiSynonyms = "";
+  let autoPartOfSpeech = "";
+  let autoSynonyms = "";
+  let autoAntonyms = "";
+  let autoPhonetic = "";
+  let autoOrigin = "";
+  let autoDictExample = "";
 
-  termInput.value = selection.text || "";
-  exampleInput.value = selection.sentence || "";
+  wordInput.value = selection.text || "";
+  sourceExampleInput.value = selection.sentence || "";
   sourceLink.textContent = selection.url || "";
   sourceLink.href = selection.url || "#";
+
+  api.storage.local.get(["settings"], (result) => {
+    const providerValue = result?.settings?.definitionProvider || "dictionaryapi";
+    definitionProviderSelect.value =
+      providerValue === "dictionary" ? "dictionaryapi" : providerValue;
+  });
 
   popover.querySelector("#vc-close").addEventListener("click", removePopover);
   popover.querySelector("#vc-dismiss").addEventListener("click", removePopover);
 
-  popover.querySelector("#vc-ai").addEventListener("click", async () => {
-    const term = termInput.value.trim();
-    if (!term) {
-      statusEl.textContent = "Enter a term first.";
+  popover.querySelector("#vc-define").addEventListener("click", async () => {
+    const word = wordInput.value.trim();
+    if (!word) {
+      statusEl.textContent = "Enter a word first.";
       return;
     }
+    const provider = definitionProviderSelect.value || "dictionaryapi";
     statusEl.textContent = "Generating definition...";
     try {
-      const result = await callBackground({ type: "AI_DEFINE", term });
+      const result = await callBackground({ type: "AUTO_DEFINE", term: word, provider });
       if (typeof result === "string") {
-        definitionInput.value = result;
-        aiPos = "";
-        aiSynonyms = "";
-        posInput.value = "";
+        definitionsInput.value = result;
+        autoPartOfSpeech = "";
+        autoSynonyms = "";
+        autoAntonyms = "";
+        autoPhonetic = "";
+        autoOrigin = "";
+        autoDictExample = "";
+        partOfSpeechInput.value = "";
         synonymsInput.value = "";
+        antonymsInput.value = "";
+        phoneticInput.value = "";
+        originInput.value = "";
+        dictExampleInput.value = "";
       } else {
-        definitionInput.value = result.definition || "";
-        aiPos = result.pos || "";
-        aiSynonyms = result.synonyms || "";
-        posInput.value = aiPos;
-        synonymsInput.value = aiSynonyms;
-        if (result.example && !exampleInput.value) {
-          exampleInput.value = result.example;
+        definitionsInput.value = result.definitions || result.definition || "";
+        autoPartOfSpeech = result.partOfSpeech || result.pos || "";
+        autoSynonyms = result.synonyms || "";
+        autoAntonyms = result.antonyms || "";
+        autoPhonetic = result.phonetic || "";
+        autoOrigin = result.origin || "";
+        autoDictExample = result.dictExample || result.example || "";
+        partOfSpeechInput.value = autoPartOfSpeech;
+        synonymsInput.value = autoSynonyms;
+        antonymsInput.value = autoAntonyms;
+        phoneticInput.value = autoPhonetic;
+        originInput.value = autoOrigin;
+        if (autoDictExample && !dictExampleInput.value) {
+          dictExampleInput.value = autoDictExample;
+        }
+        if ((result.sourceExample || result.example) && !sourceExampleInput.value) {
+          sourceExampleInput.value = result.sourceExample || result.example;
         }
       }
       statusEl.textContent = "Definition ready.";
@@ -246,19 +311,20 @@ function createPopover(selection) {
 
   popover.querySelector("#vc-save").addEventListener("click", async () => {
     const payload = {
-      term: termInput.value.trim(),
-      definition: definitionInput.value.trim(),
-      example: exampleInput.value.trim(),
-      pos: aiPos,
-      synonyms: aiSynonyms,
-      source: selection.url || "",
-      context: exampleInput.value.trim(),
-      frontContext: `${termInput.value.trim()}\n${exampleInput.value.trim()}`.trim(),
-      backDefOnly: definitionInput.value.trim()
+      word: wordInput.value.trim(),
+      phonetic: phoneticInput.value.trim() || autoPhonetic,
+      origin: originInput.value.trim() || autoOrigin,
+      partOfSpeech: partOfSpeechInput.value.trim() || autoPartOfSpeech,
+      definitions: definitionsInput.value.trim(),
+      dictExample: dictExampleInput.value.trim() || autoDictExample,
+      synonyms: synonymsInput.value.trim() || autoSynonyms,
+      antonyms: antonymsInput.value.trim() || autoAntonyms,
+      sourceExample: sourceExampleInput.value.trim(),
+      source: selection.url || ""
     };
 
-    if (!payload.term) {
-      statusEl.textContent = "Term is required.";
+    if (!payload.word) {
+      statusEl.textContent = "Word is required.";
       return;
     }
 
@@ -267,7 +333,11 @@ function createPopover(selection) {
       await callBackground({ type: "ADD_NOTE", payload });
       statusEl.textContent = "Saved to Anki.";
     } catch (error) {
-      statusEl.textContent = `Error: ${error.message}`;
+      if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+        statusEl.textContent = "Error: Cannot connect to Anki. Is it open?";
+      } else {
+        statusEl.textContent = `Error: ${error.message}`;
+      }
     }
   });
 
@@ -280,7 +350,10 @@ function createPopover(selection) {
   );
 }
 
-document.addEventListener("dblclick", () => {
+document.addEventListener("dblclick", async () => {
+  const settings = await callBackground({ type: "GET_SETTINGS" });
+  if (settings.enableDoubleClick === false) return; // Only return if explicitly false
+
   const selection = getSelectionInfo();
   if (!selection.text) return;
   createPopover(selection);
@@ -288,7 +361,23 @@ document.addEventListener("dblclick", () => {
 
 api.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (!message || !message.type) return;
+
   if (message.type === "GET_SELECTION") {
     sendResponse(getSelectionInfo());
+    return;
+  }
+
+  if (message.type === "SHOW_POPOVER") {
+    const selection = getSelectionInfo();
+    // Use the draft if provided, otherwise default selection info
+    if (message.draft) {
+       // Ideally we would merge draft info here, but for now let's just use what createPopover expects.
+       // Only text is guaranteed.
+       createPopover({ ...selection, ...message.draft });
+    } else {
+       createPopover(selection);
+    }
+    sendResponse({ ok: true });
+    return;
   }
 });

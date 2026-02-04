@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocab Collector - Help & Guide</title>
+    <link rel="stylesheet" href="help.css">
+</head>
+<body>
+    <header>
+        <h1>Vocab Collector Help</h1>
+        <p>Your guide to capturing words and saving them to Anki.</p>
+    </header>
+
+    <main>
+        <div class="note">
+            <span class="note-title">Prerequisites</span>
+            <ol style="margin: 0; padding-left: 20px;">
+                <li><strong>Anki Desktop</strong> must be installed and running.</li>
+                <li><strong>AnkiConnect</strong> add-on must be installed (Code: <code>2055492159</code>).</li>
+            </ol>
+            <p style="margin-top: 8px; margin-bottom: 0;"><em>Make sure to restart Anki after installing the add-on.</em></p>
+        </div>
+
+        <section id="features">
+            <h2>Features</h2>
+            <ul>
+                <li><strong>Capture</strong> selected text from any webpage.</li>
+                <li><strong>Auto-define</strong> words using free dictionary APIs or AI.</li>
+                <li><strong>Smart Analysis</strong> detects word forms, synonyms, antonyms, and usage examples.</li>
+                <li><strong>Customizable</strong> deck, model, and field mapping for Anki cards.</li>
+                <li><strong>History</strong> keeps track of words you've recently added.</li>
+            </ul>
+        </section>
+
+        <section id="usage">
+            <h2>How to Use</h2>
+            
+            <h3>Method 1: Quick Popover (Recommended)</h3>
+            <ol>
+                <li>Double-click any word on a webpage (or select valid text).</li>
+                <li>A popover will appear with definition and details.</li>
+                <li>Review the information. You can edit any field.</li>
+                <li>Click <strong>Save</strong> to send directly to Anki.</li>
+            </ol>
+            <p><em>Note: You can disable the double-click trigger in <strong>Options > Appearance & Behavior</strong> if you prefer using only the Right Click menu.</em></p>
+
+            <h3>Method 2: Right Click Context Menu</h3>
+            <ol>
+                <li>Select text on any page.</li>
+                <li>Right-click and choose <strong>Save vocab to Anki</strong>.</li>
+                <li>The popover will appear.</li>
+            </ol>
+
+            <h3>Method 3: Toolbar Popup</h3>
+            <ol>
+                <li>Click the extension icon in your browser toolbar.</li>
+                <li>Click <strong>Add New Vocab</strong>.</li>
+                <li>This will trigger the popover on the current page for the active selection.</li>
+            </ol>
+        </section>
+
+        <section id="setup">
+            <h2>Configuration</h2>
+            <p>Access the <strong>Options</strong> page by clicking the "Options" button in the extension popup or right-clicking the extension icon.</p>
+
+            <h3>Anki Connection</h3>
+            <ul>
+                <li><strong>URL</strong>: Default is <code>http://127.0.0.1:8765</code>.</li>
+                <li><strong>Deck</strong>: The name of the Anki deck to save cards to (e.g., "English").</li>
+                <li><strong>Model</strong>: The note type to use (e.g., "Basic", "Vocab Card").</li>
+            </ul>
+
+            <h3>AI Definitions (Optional)</h3>
+            <p>To use AI definitions (powered by OpenRouter):</p>
+            <ol>
+                <li>Get an API key from <a href="https://openrouter.ai" target="_blank">OpenRouter.ai</a>.</li>
+                <li>Enter the key in the Options page.</li>
+                <li>Select Definition Source as <strong>AI</strong> in the popover or set it as default in Options.</li>
+            </ol>
+        </section>
+
+        <section id="fields">
+            <h2>Field Mapping</h2>
+            <p>The extension can fill the following fields in your Anki note:</p>
+            <ul>
+                <li><code>Word</code>: The captured term.</li>
+                <li><code>Definitions</code>: Meanings of the word.</li>
+                <li><code>Dictionary Example</code>: Example sentence from the dictionary/AI.</li>
+                <li><code>Part of Speech</code>: e.g., Noun, Verb.</li>
+                <li><code>Synonyms</code> / <code>Antonyms</code></li>
+                <li><code>Phonetic</code>: Pronunciation guide (IPA).</li>
+                <li><code>Origin</code>: Etymology.</li>
+                <li><code>Source Example</code>: The sentence where you found the word.</li>
+                <li><code>Source</code>: URL of the page.</li>
+            </ul>
+            <p>Go to <strong>Options > Field Mapping</strong> to match these to your specific Anki note type names.</p>
+        </section>
+
+        <section id="troubleshooting">
+            <h2>Troubleshooting</h2>
+            <ul>
+                <li><strong>Connection Failed?</strong> Ensure Anki is open and AnkiConnect is installed. Check if the URL is correct.</li>
+                <li><strong>No Popover?</strong> Refresh the page. The extension cannot run on some restricted browser pages (like the New Tab page or extension store).</li>
+                <li><strong>AI Errors?</strong> Check your usage limits on OpenRouter and ensure you have selected a valid model.</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>Vocab Collector v1.0.0</p>
+    </footer>
+</body>
+</html>

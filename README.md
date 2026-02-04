@@ -5,7 +5,7 @@ A Firefox-first browser extension that lets you capture words from any page and 
 ## Features
 - Capture selection from any page
 - Edit term, definition, example, source
-- Auto-define with a dictionary API
+- Auto-define with a dictionary API (default)
 - Double-click popover with quick save or dismiss
 - AI definitions with OpenRouter (optional)
 - Configure deck, model, and field mapping
@@ -19,16 +19,22 @@ A Firefox-first browser extension that lets you capture words from any page and 
 - **Background bridge**: All AnkiConnect and OpenRouter requests go through the background script.
 - **Local storage**: Settings, draft, and history are stored locally in the browser.
 
+## Prerequisites
+1. **Anki Desktop** installed and running.
+2. **AnkiConnect** add-on installed (Code: `2055492159`).
+   - *Note: You must restart Anki after installing the add-on.*
+3. Ensure Anki is open in the background while using the extension.
+
 ## Usage
 ### Quick save with popover
 1. Double-click a word or phrase on any page.
 2. Review or edit the term/definition/example.
 3. Click **Save** to send to Anki, or **Dismiss** to close.
 
-### Full edit via popup
-1. Click the extension icon.
-2. Click **Use selection** to load current page selection.
-3. Fill in fields and click **Send to Anki**.
+### History & Quick Access
+1. Click the extension icon in the toolbar.
+2. View your recently saved words in the History tab.
+3. Click **Add New Vocab** button to manually trigger the popover on the current page.
 
 ## Settings
 Open the Options page to configure:
@@ -39,29 +45,23 @@ Open the Options page to configure:
 - **OpenRouter API key and model** (optional)
 
 ## Field Mapping
-The extension can populate standard and advanced fields if your Anki model includes them.
+The extension supports the following fields and can auto-add them to your Anki model if enabled:
 
-**Standard fields**
-- `Front`: term
-- `Back`: definition
-- `Example`: example sentence (optional)
-- `Source`: source URL (optional)
-
-**Advanced fields** (map only if present in your note type)
-- `Key`: unique key (manual)
-- `Word`: term
-- `Context`: example sentence
-- `FrontContext`: term + example
-- `BackDefOnly`: definition only
-- `Reverse`: custom flag (manual)
-
-If a mapped field does not exist in your Anki model, it will be ignored by Anki.
+- `Word`
+- `Phonetic`
+- `Origin`
+- `PartOfSpeech`
+- `Definitions`
+- `Synonyms`
+- `Antonyms`
+- `SourceExample`
+- `Source`
 
 ## OpenRouter AI definitions
 AI definition generation uses OpenRouter. To enable:
 1. Set your OpenRouter API key in Options.
 2. Choose a model, e.g. `deepseek/deepseek-v3.2`.
-3. Click **AI Define** in the popup or popover.
+3. Click **Auto-define** in the popup or **Define** in the popover.
 
 If OpenRouter returns a policy error, visit https://openrouter.ai/settings/privacy and enable the required data policy.
 
@@ -73,6 +73,11 @@ If OpenRouter returns a policy error, visit https://openrouter.ai/settings/priva
 	- AnkiConnect (http://127.0.0.1:8765, http://localhost:8765)
 	- Dictionary API (https://api.dictionaryapi.dev)
 	- OpenRouter API (https://openrouter.ai)
+
+## Definition lookup behavior
+- **Default**: Dictionary lookup first.
+- **AI fallback**: If the dictionary has no result and an OpenRouter key is set, it will try AI.
+- **Non-English**: You can prefer AI for non-English terms in Options.
 
 ## Troubleshooting
 - **No fields beyond Front/Back**: your Anki model only has those fields. Add fields in Anki, then map them in Options.

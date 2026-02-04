@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Vocab Collector for Anki",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "Collect words from the web and save to Anki via AnkiConnect.",
   "browser_action": {
     "default_title": "Collect Vocab",
@@ -23,6 +23,7 @@
     "page": "options/options.html",
     "open_in_tab": true
   },
+  "options_page": "options/options.html",
   "background": {
     "scripts": ["background/background.js"],
     "persistent": false
@@ -35,6 +36,7 @@
     "http://127.0.0.1:8765/",
     "http://localhost:8765/",
     "https://api.dictionaryapi.dev/*",
+    "https://en.wiktionary.org/*",
     "https://openrouter.ai/*"
   ],
   "content_scripts": [

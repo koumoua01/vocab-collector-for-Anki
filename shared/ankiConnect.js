@@ -42,3 +42,21 @@ export async function addNote({
 export async function requestPermission(ankiConnectUrl) {
   return ankiInvoke("requestPermission", {}, ankiConnectUrl);
 }
+
+export async function modelFieldNames(modelName, ankiConnectUrl) {
+  return ankiInvoke("modelFieldNames", { modelName }, ankiConnectUrl);
+}
+
+export async function modelFieldAdd(modelName, fieldName, ankiConnectUrl) {
+  return ankiInvoke("modelFieldAdd", { modelName, fieldName }, ankiConnectUrl);
+}
+
+export async function ensureModelFields(modelName, fieldNames, ankiConnectUrl) {
+  if (!modelName || !Array.isArray(fieldNames) || !fieldNames.length) return;
+  const existing = await modelFieldNames(modelName, ankiConnectUrl);
+  const existingSet = new Set((existing || []).map((name) => String(name)));
+  const missing = fieldNames.filter((name) => name && !existingSet.has(name));
+  for (const fieldName of missing) {
+    await modelFieldAdd(modelName, fieldName, ankiConnectUrl);
+  }
+}

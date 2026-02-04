@@ -5,29 +5,39 @@ export const DEFAULT_SETTINGS = {
   deckName: "Default",
   modelName: "Basic",
   fieldMapping: {
-    front: "Front",
-    back: "Back",
-    pos: "",
-    synonyms: "",
-    example: "",
-    source: "",
-    key: "",
-    word: "",
-    context: "",
-    frontContext: "",
-    backDefOnly: "",
-    reverse: ""
+    word: "Word",
+    phonetic: "Phonetic",
+    origin: "Origin",
+    partOfSpeech: "PartOfSpeech",
+    definitions: "Definitions",
+    dictExample: "DictExample",
+    synonyms: "Synonyms",
+    antonyms: "Antonyms",
+    sourceExample: "SourceExample",
+    source: "Source"
   },
-  tags: "vocab",
+  tags: "web_vocabs",
   allowDuplicate: false,
+  autoAddFields: true,
+  definitionProvider: "dictionaryapi",
+  aiFallback: true,
+  aiNonEnglish: true,
   openRouterApiKey: "",
   openRouterModel: "openrouter/auto",
-  openRouterEndpoint: "https://openrouter.ai/api/v1/chat/completions"
+  openRouterEndpoint: "https://openrouter.ai/api/v1/chat/completions",
+  enableDoubleClick: true
 };
 
 export async function getSettings() {
   const result = await api.storage.local.get(["settings"]);
-  return { ...DEFAULT_SETTINGS, ...(result.settings || {}) };
+  return {
+    ...DEFAULT_SETTINGS,
+    ...(result.settings || {}),
+    fieldMapping: {
+      ...DEFAULT_SETTINGS.fieldMapping,
+      ...((result.settings && result.settings.fieldMapping) || {})
+    }
+  };
 }
 
 export async function saveSettings(settings) {

@@ -12,97 +12,14 @@
         <h1>Vocab Collector</h1>
         <p>Capture words and send to Anki.</p>
       </div>
-      <button id="open-options" class="ghost-button" type="button">Options</button>
+      <div>
+        <button id="open-help" class="ghost-button" type="button" style="margin-right: 4px;">Help</button>
+        <button id="open-options" class="ghost-button" type="button">Options</button>
+      </div>
     </header>
 
-    <section class="panel" id="status-panel">
-      <div class="status" id="status">Ready</div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-header">
-        <h2>Current selection</h2>
-        <button id="use-selection" class="ghost-button" type="button">Use selection</button>
-      </div>
-      <div class="selection" id="selection-preview">No selection yet.</div>
-    </section>
-
-    <section class="panel">
-      <h2>Card details</h2>
-      <form id="card-form">
-        <label>
-          Term
-          <input id="term" name="term" type="text" placeholder="Word or phrase" required />
-        </label>
-        <label>
-          Definition / Translation
-          <textarea id="definition" name="definition" rows="3" placeholder="Meaning or translation"></textarea>
-        </label>
-        <div class="inline-grid">
-          <label>
-            Part of Speech
-            <input id="pos" name="pos" type="text" placeholder="e.g. noun, verb" />
-          </label>
-          <label>
-            Synonyms
-            <input id="synonyms" name="synonyms" type="text" placeholder="e.g. word1, word2" />
-          </label>
-        </div>
-        <label>
-          Example sentence
-          <textarea id="example" name="example" rows="2" placeholder="Example sentence"></textarea>
-        </label>
-        <label>
-          Source URL
-          <input id="source" name="source" type="url" placeholder="https://..." />
-        </label>
-        <label>
-          Tags (space separated)
-          <input id="tags" name="tags" type="text" placeholder="vocab" />
-        </label>
-        <div class="inline-grid">
-          <label>
-            Deck
-            <input id="deck" name="deck" type="text" />
-          </label>
-          <label>
-            Model
-            <input id="model" name="model" type="text" />
-          </label>
-        </div>
-        <details class="advanced">
-          <summary>Advanced fields</summary>
-          <label>
-            Key
-            <input id="key" name="key" type="text" placeholder="Optional" />
-          </label>
-          <label>
-            Word
-            <input id="word" name="word" type="text" placeholder="Optional" />
-          </label>
-          <label>
-            Context
-            <textarea id="context" name="context" rows="2" placeholder="Optional"></textarea>
-          </label>
-          <label>
-            FrontContext
-            <textarea id="front-context" name="front-context" rows="2" placeholder="Optional"></textarea>
-          </label>
-          <label>
-            BackDefOnly
-            <textarea id="back-def-only" name="back-def-only" rows="2" placeholder="Optional"></textarea>
-          </label>
-          <label>
-            Reverse
-            <input id="reverse" name="reverse" type="text" placeholder="Optional" />
-          </label>
-        </details>
-        <div class="action-row">
-          <button id="auto-define" class="secondary" type="button">Auto-define</button>
-          <button id="save-draft" class="secondary" type="button">Save draft</button>
-          <button id="send-anki" class="primary" type="submit">Send to Anki</button>
-        </div>
-      </form>
+    <section class="panel" style="text-align: center; padding: 20px;">
+      <button id="add-vocab" class="primary" style="width: 100%; padding: 12px; font-size: 14px;">Add New Vocab</button>
     </section>
 
     <section class="panel">

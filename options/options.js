@@ -13,20 +13,23 @@ const fields = {
   model: document.getElementById("model"),
   tags: document.getElementById("tags"),
   allowDuplicate: document.getElementById("allow-duplicate"),
+  autoAddFields: document.getElementById("auto-add-fields"),
+  enableDoubleClick: document.getElementById("enable-double-click"),
   openRouterKey: document.getElementById("openrouter-key"),
   openRouterModel: document.getElementById("openrouter-model"),
-  fieldFront: document.getElementById("field-front"),
-  fieldBack: document.getElementById("field-back"),
-  fieldPos: document.getElementById("field-pos"),
-  fieldSynonyms: document.getElementById("field-synonyms"),
-  fieldExample: document.getElementById("field-example"),
-  fieldSource: document.getElementById("field-source"),
-  fieldKey: document.getElementById("field-key"),
+  definitionProvider: document.getElementById("definition-provider"),
+  aiFallback: document.getElementById("ai-fallback"),
+  aiNonEnglish: document.getElementById("ai-non-english"),
   fieldWord: document.getElementById("field-word"),
-  fieldContext: document.getElementById("field-context"),
-  fieldFrontContext: document.getElementById("field-front-context"),
-  fieldBackDefOnly: document.getElementById("field-back-def-only"),
-  fieldReverse: document.getElementById("field-reverse")
+  fieldPhonetic: document.getElementById("field-phonetic"),
+  fieldOrigin: document.getElementById("field-origin"),
+  fieldPartOfSpeech: document.getElementById("field-part-of-speech"),
+  fieldDefinitions: document.getElementById("field-definitions"),
+  fieldDictExample: document.getElementById("field-dict-example"),
+  fieldSynonyms: document.getElementById("field-synonyms"),
+  fieldAntonyms: document.getElementById("field-antonyms"),
+  fieldSourceExample: document.getElementById("field-source-example"),
+  fieldSourceUrl: document.getElementById("field-source")
 };
 
 function setStatus(text) {
@@ -56,20 +59,29 @@ async function loadSettings() {
   fields.model.value = settings.modelName;
   fields.tags.value = settings.tags || "";
   fields.allowDuplicate.checked = Boolean(settings.allowDuplicate);
+  fields.autoAddFields.checked = settings.autoAddFields !== false;
+  // Migration logic: if triggerMode specific, convert. Else usage default.
+  if (settings.triggerMode === "context-menu") {
+      fields.enableDoubleClick.checked = false;
+  } else {
+      fields.enableDoubleClick.checked = settings.enableDoubleClick !== false;
+  }
   fields.openRouterKey.value = settings.openRouterApiKey || "";
   fields.openRouterModel.value = settings.openRouterModel || "openrouter/auto";
-  fields.fieldFront.value = settings.fieldMapping.front || "Front";
-  fields.fieldBack.value = settings.fieldMapping.back || "Back";
-  fields.fieldPos.value = settings.fieldMapping.pos || "";
-  fields.fieldSynonyms.value = settings.fieldMapping.synonyms || "";
-  fields.fieldExample.value = settings.fieldMapping.example || "";
-  fields.fieldSource.value = settings.fieldMapping.source || "";
-  fields.fieldKey.value = settings.fieldMapping.key || "";
-  fields.fieldWord.value = settings.fieldMapping.word || "";
-  fields.fieldContext.value = settings.fieldMapping.context || "";
-  fields.fieldFrontContext.value = settings.fieldMapping.frontContext || "";
-  fields.fieldBackDefOnly.value = settings.fieldMapping.backDefOnly || "";
-  fields.fieldReverse.value = settings.fieldMapping.reverse || "";
+  const providerValue = settings.definitionProvider || "dictionaryapi";
+  fields.definitionProvider.value = providerValue === "dictionary" ? "dictionaryapi" : providerValue;
+  fields.aiFallback.checked = settings.aiFallback !== false;
+  fields.aiNonEnglish.checked = settings.aiNonEnglish !== false;
+  fields.fieldWord.value = settings.fieldMapping.word || settings.fieldMapping.front || "Word";
+  fields.fieldPhonetic.value = settings.fieldMapping.phonetic || "Phonetic";
+  fields.fieldOrigin.value = settings.fieldMapping.origin || "Origin";
+  fields.fieldPartOfSpeech.value = settings.fieldMapping.partOfSpeech || settings.fieldMapping.pos || "PartOfSpeech";
+  fields.fieldDefinitions.value = settings.fieldMapping.definitions || settings.fieldMapping.back || "Definitions";
+  fields.fieldDictExample.value = settings.fieldMapping.dictExample || "DictExample";
+  fields.fieldSynonyms.value = settings.fieldMapping.synonyms || "Synonyms";
+  fields.fieldAntonyms.value = settings.fieldMapping.antonyms || "Antonyms";
+  fields.fieldSourceExample.value = settings.fieldMapping.sourceExample || settings.fieldMapping.example || "SourceExample";
+  fields.fieldSourceUrl.value = settings.fieldMapping.source || "Source";
 }
 
 function collectSettings() {
@@ -91,21 +103,24 @@ function collectSettings() {
     modelName: fields.model.value.trim() || "Basic",
     tags: fields.tags.value.trim(),
     allowDuplicate: fields.allowDuplicate.checked,
+    autoAddFields: fields.autoAddFields.checked,
+    enableDoubleClick: fields.enableDoubleClick.checked,
+    definitionProvider: fields.definitionProvider.value || "dictionaryapi",
+    aiFallback: fields.aiFallback.checked,
+    aiNonEnglish: fields.aiNonEnglish.checked,
     openRouterApiKey: fields.openRouterKey.value.trim(),
     openRouterModel: modelValue || "openrouter/auto",
     fieldMapping: {
-      front: fields.fieldFront.value.trim() || "Front",
-      back: fields.fieldBack.value.trim() || "Back",
-      pos: fields.fieldPos.value.trim(),
-      synonyms: fields.fieldSynonyms.value.trim(),
-      example: fields.fieldExample.value.trim(),
-      source: fields.fieldSource.value.trim(),
-      key: fields.fieldKey.value.trim(),
-      word: fields.fieldWord.value.trim(),
-      context: fields.fieldContext.value.trim(),
-      frontContext: fields.fieldFrontContext.value.trim(),
-      backDefOnly: fields.fieldBackDefOnly.value.trim(),
-      reverse: fields.fieldReverse.value.trim()
+      word: fields.fieldWord.value.trim() || "Word",
+      phonetic: fields.fieldPhonetic.value.trim() || "Phonetic",
+      origin: fields.fieldOrigin.value.trim() || "Origin",
+      partOfSpeech: fields.fieldPartOfSpeech.value.trim() || "PartOfSpeech",
+      definitions: fields.fieldDefinitions.value.trim() || "Definitions",
+      dictExample: fields.fieldDictExample.value.trim() || "DictExample",
+      synonyms: fields.fieldSynonyms.value.trim() || "Synonyms",
+      antonyms: fields.fieldAntonyms.value.trim() || "Antonyms",
+      sourceExample: fields.fieldSourceExample.value.trim() || "SourceExample",
+      source: fields.fieldSourceUrl.value.trim() || "Source"
     }
   };
 }
@@ -133,7 +148,7 @@ testOpenRouterButton.addEventListener("click", async () => {
   try {
     setStatus("Testing OpenRouter...");
     const result = await callBackground({ type: "AI_DEFINE", term: "test" });
-    const definition = typeof result === "string" ? result : result.definition || "";
+    const definition = typeof result === "string" ? result : result.definitions || result.definition || "";
     setStatus(`OpenRouter OK: ${definition.slice(0, 80)}`);
   } catch (error) {
     setStatus(`OpenRouter failed: ${error.message}`);
