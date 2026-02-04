@@ -95,3 +95,7 @@ If OpenRouter returns a policy error, visit https://openrouter.ai/settings/priva
 1. Open chrome://extensions
 2. Enable Developer mode
 3. Click "Load unpacked" and select the project folder
+
+## License
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
