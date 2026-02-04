@@ -87,14 +87,24 @@ If OpenRouter returns a policy error, visit https://openrouter.ai/settings/priva
 ## Requirements
 - Anki desktop with AnkiConnect installed and running
 
+## Browser Compatibility
+This extension supports both Chrome and Firefox. The project includes separate manifest files for each browser:
+
+- `manifest-chrome.json`: Optimized for Chrome/Chromium browsers
+- `manifest-firefox.json`: Optimized for Firefox
+
+**Important**: Before loading the extension, you must replace the content of `manifest.json` with the content from the appropriate browser-specific manifest file (`manifest-chrome.json` or `manifest-firefox.json`) depending on which browser you plan to use.
+
 ## Load in Firefox
-1. Open about:debugging#/runtime/this-firefox
-2. Click "Load Temporary Add-on" and select manifest.json
+1. Copy the content of `manifest-firefox.json` into `manifest.json`
+2. Open about:debugging#/runtime/this-firefox
+3. Click "Load Temporary Add-on" and select `manifest.json`
 
 ## Load in Chrome
-1. Open chrome://extensions
-2. Enable Developer mode
-3. Click "Load unpacked" and select the project folder
+1. Copy the content of `manifest-chrome.json` into `manifest.json`
+2. Open chrome://extensions
+3. Enable Developer mode
+4. Click "Load unpacked" and select the project folder
 
 ## Contributing
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests.

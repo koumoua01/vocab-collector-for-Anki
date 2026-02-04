@@ -1,4 +1,4 @@
-const api = globalThis.browser ?? chrome;
+const api = globalThis.browser?.runtime?.sendMessage ? globalThis.browser : globalThis.chrome;
 
 export const DEFAULT_SETTINGS = {
   ankiConnectUrl: "http://127.0.0.1:8765",
