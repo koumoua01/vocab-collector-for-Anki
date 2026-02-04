@@ -96,6 +96,10 @@ If OpenRouter returns a policy error, visit https://openrouter.ai/settings/priva
 2. Enable Developer mode
 3. Click "Load unpacked" and select the project folder
 
+## Contributing
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests.
+
 ## License
+
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
 
