@@ -1,4 +1,4 @@
-const api = globalThis.browser ?? chrome;
+const api = globalThis.browser?.runtime?.sendMessage ? globalThis.browser : globalThis.chrome;
 
 export async function ankiInvoke(action, params, url) {
   const response = await fetch(url, {

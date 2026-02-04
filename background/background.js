@@ -1,4 +1,4 @@
-const api = globalThis.browser ?? chrome;
+const api = globalThis.browser?.runtime?.sendMessage ? globalThis.browser : globalThis.chrome;
 
 async function setBadge(text) {
   const badgeApi = api.action || api.browserAction;

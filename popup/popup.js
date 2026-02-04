@@ -1,6 +1,6 @@
 import { getHistory } from "../shared/storage.js";
 
-const api = globalThis.browser ?? chrome;
+const api = globalThis.browser?.runtime?.sendMessage ? globalThis.browser : globalThis.chrome;
 const historyList = document.getElementById("history");
 const clearHistoryButton = document.getElementById("clear-history");
 const openOptionsButton = document.getElementById("open-options");

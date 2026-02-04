@@ -5,7 +5,7 @@ const statusEl = document.getElementById("status");
 const saveButton = document.getElementById("save");
 const testButton = document.getElementById("test");
 const testOpenRouterButton = document.getElementById("test-openrouter");
-const api = globalThis.browser ?? chrome;
+const api = globalThis.browser?.runtime?.sendMessage ? globalThis.browser : globalThis.chrome;
 
 const fields = {
   ankiUrl: document.getElementById("anki-url"),

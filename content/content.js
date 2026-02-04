@@ -1,4 +1,4 @@
-const api = globalThis.browser ?? chrome;
+const api = globalThis.browser?.runtime?.sendMessage ? globalThis.browser : globalThis.chrome;
 
 function getSelectionInfo() {
   const selection = window.getSelection();
@@ -31,17 +31,24 @@ function getSelectionInfo() {
 
 function callBackground(message) {
   return new Promise((resolve, reject) => {
-    api.runtime.sendMessage(message, (response) => {
-      if (api.runtime.lastError) {
-        reject(new Error(api.runtime.lastError.message));
-        return;
+    try {
+      if (!api?.runtime?.sendMessage) {
+        throw new Error("Extension context invalidated");
       }
-      if (!response || response.ok === false) {
-        reject(new Error(response?.error || "Unknown error"));
-        return;
-      }
-      resolve(response.result);
-    });
+      api.runtime.sendMessage(message, (response) => {
+        if (api.runtime.lastError) {
+          reject(new Error(api.runtime.lastError.message));
+          return;
+        }
+        if (!response || response.ok === false) {
+          reject(new Error(response?.error || "Unknown error"));
+          return;
+        }
+        resolve(response.result);
+      });
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
@@ -156,6 +163,21 @@ function createPopover(selection) {
         color: #93c5fd;
         border-color: #334155;
       }
+      /* Custom Scrollbar */
+      .vc-root::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      .vc-root::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .vc-root::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 4px;
+      }
+      .vc-root::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+      }
     </style>
     <div class="vc-root" style="max-height: calc(100vh - 80px); overflow: auto; padding-right: 4px;">
       <div class="vc-header">
@@ -211,7 +233,7 @@ function createPopover(selection) {
           </label>
         </div>
       </details>
-      <div style="font-size:11px;color:#94a3b8;">
+      <div style="font-size:11px;color:#94a3b8;word-break:break-all;">
         Source: <a id="vc-source" href="#" target="_blank" style="color:#93c5fd;text-decoration:none;"></a>
       </div>
       <div id="vc-status" style="font-size:11px;color:#cbd5f5;">Ready</div>
@@ -250,11 +272,13 @@ function createPopover(selection) {
   sourceLink.textContent = selection.url || "";
   sourceLink.href = selection.url || "#";
 
-  api.storage.local.get(["settings"], (result) => {
-    const providerValue = result?.settings?.definitionProvider || "dictionaryapi";
-    definitionProviderSelect.value =
-      providerValue === "dictionary" ? "dictionaryapi" : providerValue;
-  });
+  if (api?.storage?.local?.get) {
+    api.storage.local.get(["settings"], (result) => {
+      const providerValue = result?.settings?.definitionProvider || "dictionaryapi";
+      definitionProviderSelect.value =
+        providerValue === "dictionary" ? "dictionaryapi" : providerValue;
+    });
+  }
 
   popover.querySelector("#vc-close").addEventListener("click", removePopover);
   popover.querySelector("#vc-dismiss").addEventListener("click", removePopover);
@@ -351,33 +375,42 @@ function createPopover(selection) {
 }
 
 document.addEventListener("dblclick", async () => {
-  const settings = await callBackground({ type: "GET_SETTINGS" });
-  if (settings.enableDoubleClick === false) return; // Only return if explicitly false
+  try {
+    const settings = await callBackground({ type: "GET_SETTINGS" });
+    if (settings.enableDoubleClick === false) return; // Only return if explicitly false
 
-  const selection = getSelectionInfo();
-  if (!selection.text) return;
-  createPopover(selection);
-});
-
-api.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (!message || !message.type) return;
-
-  if (message.type === "GET_SELECTION") {
-    sendResponse(getSelectionInfo());
-    return;
-  }
-
-  if (message.type === "SHOW_POPOVER") {
     const selection = getSelectionInfo();
-    // Use the draft if provided, otherwise default selection info
-    if (message.draft) {
-       // Ideally we would merge draft info here, but for now let's just use what createPopover expects.
-       // Only text is guaranteed.
-       createPopover({ ...selection, ...message.draft });
-    } else {
-       createPopover(selection);
+    if (!selection.text) return;
+    createPopover(selection);
+  } catch (error) {
+    // If extension context invalidates (e.g. update/reload), we probably want to stay silent or log
+    if (error.message.includes("Extension context invalidated")) {
+      console.log("Vocab collector: context invalidated, please reload page.");
     }
-    sendResponse({ ok: true });
-    return;
   }
 });
+
+if (api?.runtime?.onMessage?.addListener) {
+  api.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (!message || !message.type) return;
+
+    if (message.type === "GET_SELECTION") {
+      sendResponse(getSelectionInfo());
+      return;
+    }
+
+    if (message.type === "SHOW_POPOVER") {
+      const selection = getSelectionInfo();
+      // Use the draft if provided, otherwise default selection info
+      if (message.draft) {
+         // Ideally we would merge draft info here, but for now let's just use what createPopover expects.
+         // Only text is guaranteed.
+         createPopover({ ...selection, ...message.draft });
+      } else {
+         createPopover(selection);
+      }
+      sendResponse({ ok: true });
+      return;
+    }
+  });
+}
