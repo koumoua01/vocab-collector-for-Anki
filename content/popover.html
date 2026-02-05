@@ -1,0 +1,68 @@
+<div class="vc-root">
+  <div class="vc-header">
+    <div class="vc-title">Vocab Collector</div>
+    <button id="vc-close" class="vc-close" type="button" aria-label="Close">✕</button>
+  </div>
+  <label class="vc-field">
+    Word
+    <input id="vc-word" class="vc-input" type="text" />
+  </label>
+  <label class="vc-field">
+    Definition Source
+    <select id="vc-definition-provider" class="vc-select">
+      <option value="dictionaryapi">DictionaryAPI</option>
+      <option value="wiktionary">Wiktionary</option>
+      <option value="ai">AI</option>
+    </select>
+  </label>
+  <label class="vc-field">
+    Definitions
+    <textarea id="vc-definitions" class="vc-textarea" rows="4"></textarea>
+  </label>
+  <details class="vc-details">
+    <summary class="vc-summary">More fields</summary>
+    <div class="vc-more-fields">
+      <label class="vc-field">
+        Dictionary Example
+        <textarea id="vc-dict-example" class="vc-textarea" rows="2"></textarea>
+      </label>
+      <label class="vc-field">
+        Other Forms
+        <textarea id="vc-other-forms" class="vc-textarea" rows="1"></textarea>
+      </label>
+      <label class="vc-field">
+        Part of Speech
+        <input id="vc-part-of-speech" class="vc-input" type="text" />
+      </label>
+      <label class="vc-field">
+        Synonyms
+        <textarea id="vc-synonyms" class="vc-textarea" rows="1"></textarea>
+      </label>
+      <label class="vc-field">
+        Antonyms
+        <textarea id="vc-antonyms" class="vc-textarea" rows="1"></textarea>
+      </label>
+      <label class="vc-field">
+        Phonetic
+        <input id="vc-phonetic" class="vc-input" type="text" />
+      </label>
+      <label class="vc-field">
+        Origin
+        <input id="vc-origin" class="vc-input" type="text" />
+      </label>
+      <label class="vc-field">
+        Source Example
+        <textarea id="vc-source-example" class="vc-textarea" rows="2"></textarea>
+      </label>
+    </div>
+  </details>
+  <div class="vc-source">
+    Source: <a id="vc-source" class="vc-source-link" href="#" target="_blank" rel="noopener noreferrer"></a>
+  </div>
+  <div id="vc-status" class="vc-status">Ready</div>
+  <div class="vc-actions">
+    <button id="vc-define" class="vc-button vc-button--secondary" type="button">Define</button>
+    <button id="vc-save" class="vc-button vc-button--primary" type="button">Save</button>
+    <button id="vc-dismiss" class="vc-button vc-button--ghost" type="button">Dismiss</button>
+  </div>
+</div>
