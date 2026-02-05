@@ -132,6 +132,42 @@ function createPopover(selection) {
         grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
         gap: 8px;
       }
+      .vc-input,
+      .vc-textarea,
+      .vc-select {
+        width: 100%;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+        background: #0b1220;
+        color: #f8fafc;
+        font-size: 12px;
+        line-height: 1.4;
+        font: inherit;
+        box-shadow: none;
+        outline: none;
+        appearance: none;
+        -moz-appearance: none;
+      }
+      .vc-input {
+        min-height: 34px;
+      }
+      .vc-textarea {
+        resize: vertical;
+      }
+      .vc-select {
+        background-image: none;
+      }
+      @supports (-moz-appearance: none) {
+        .vc-input,
+        .vc-select {
+          min-height: 30px;
+          padding: 6px 8px;
+        }
+        .vc-textarea {
+          padding: 6px 8px;
+        }
+      }
       .vc-button {
         all: unset;
         display: inline-flex;
@@ -186,11 +222,11 @@ function createPopover(selection) {
       </div>
       <label style="display:grid;gap:6px;font-size:12px;">
         Word
-        <input id="vc-word" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
+        <input id="vc-word" class="vc-input" type="text" />
       </label>
       <label style="display:grid;gap:6px;font-size:12px;">
         Definition Source
-        <select id="vc-definition-provider" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;">
+        <select id="vc-definition-provider" class="vc-select">
           <option value="dictionaryapi">DictionaryAPI</option>
           <option value="wiktionary">Wiktionary</option>
           <option value="ai">AI</option>
@@ -198,38 +234,42 @@ function createPopover(selection) {
       </label>
       <label style="display:grid;gap:6px;font-size:12px;">
         Definitions
-        <textarea id="vc-definitions" rows="4" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+        <textarea id="vc-definitions" class="vc-textarea" rows="4"></textarea>
       </label>
       <details style="margin-top:8px;">
         <summary style="cursor:pointer;font-size:12px;color:#93c5fd;">More fields</summary>
         <div style="display:grid;gap:10px;margin-top:10px;">
           <label style="display:grid;gap:6px;font-size:12px;">
             Dictionary Example
-            <textarea id="vc-dict-example" rows="2" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+            <textarea id="vc-dict-example" class="vc-textarea" rows="2"></textarea>
+          </label>
+          <label style="display:grid;gap:6px;font-size:12px;">
+            Other Forms
+            <textarea id="vc-other-forms" class="vc-textarea" rows="1"></textarea>
           </label>
           <label style="display:grid;gap:6px;font-size:12px;">
             Part of Speech
-            <input id="vc-part-of-speech" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
+            <input id="vc-part-of-speech" class="vc-input" type="text" />
           </label>
           <label style="display:grid;gap:6px;font-size:12px;">
             Synonyms
-            <textarea id="vc-synonyms" rows="1" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+            <textarea id="vc-synonyms" class="vc-textarea" rows="1"></textarea>
           </label>
           <label style="display:grid;gap:6px;font-size:12px;">
             Antonyms
-            <textarea id="vc-antonyms" rows="1" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+            <textarea id="vc-antonyms" class="vc-textarea" rows="1"></textarea>
           </label>
           <label style="display:grid;gap:6px;font-size:12px;">
             Phonetic
-            <input id="vc-phonetic" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
+            <input id="vc-phonetic" class="vc-input" type="text" />
           </label>
           <label style="display:grid;gap:6px;font-size:12px;">
             Origin
-            <input id="vc-origin" type="text" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;" />
+            <input id="vc-origin" class="vc-input" type="text" />
           </label>
           <label style="display:grid;gap:6px;font-size:12px;">
             Source Example
-            <textarea id="vc-source-example" rows="2" style="padding:8px;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#f8fafc;resize:vertical;"></textarea>
+            <textarea id="vc-source-example" class="vc-textarea" rows="2"></textarea>
           </label>
         </div>
       </details>
@@ -252,6 +292,7 @@ function createPopover(selection) {
   const definitionsInput = popover.querySelector("#vc-definitions");
   const dictExampleInput = popover.querySelector("#vc-dict-example");
   const definitionProviderSelect = popover.querySelector("#vc-definition-provider");
+  const otherFormsInput = popover.querySelector("#vc-other-forms");
   const partOfSpeechInput = popover.querySelector("#vc-part-of-speech");
   const synonymsInput = popover.querySelector("#vc-synonyms");
   const antonymsInput = popover.querySelector("#vc-antonyms");
@@ -266,6 +307,7 @@ function createPopover(selection) {
   let autoPhonetic = "";
   let autoOrigin = "";
   let autoDictExample = "";
+  let autoOtherForms = "";
 
   wordInput.value = selection.text || "";
   sourceExampleInput.value = selection.sentence || "";
@@ -301,12 +343,14 @@ function createPopover(selection) {
         autoPhonetic = "";
         autoOrigin = "";
         autoDictExample = "";
+        autoOtherForms = "";
         partOfSpeechInput.value = "";
         synonymsInput.value = "";
         antonymsInput.value = "";
         phoneticInput.value = "";
         originInput.value = "";
         dictExampleInput.value = "";
+        otherFormsInput.value = "";
       } else {
         definitionsInput.value = result.definitions || result.definition || "";
         autoPartOfSpeech = result.partOfSpeech || result.pos || "";
@@ -315,11 +359,13 @@ function createPopover(selection) {
         autoPhonetic = result.phonetic || "";
         autoOrigin = result.origin || "";
         autoDictExample = result.dictExample || result.example || "";
+        autoOtherForms = result.otherForms || result.otherForm || "";
         partOfSpeechInput.value = autoPartOfSpeech;
         synonymsInput.value = autoSynonyms;
         antonymsInput.value = autoAntonyms;
         phoneticInput.value = autoPhonetic;
         originInput.value = autoOrigin;
+        otherFormsInput.value = autoOtherForms;
         if (autoDictExample && !dictExampleInput.value) {
           dictExampleInput.value = autoDictExample;
         }
@@ -338,6 +384,7 @@ function createPopover(selection) {
       word: wordInput.value.trim(),
       phonetic: phoneticInput.value.trim() || autoPhonetic,
       origin: originInput.value.trim() || autoOrigin,
+      otherForms: otherFormsInput.value.trim() || autoOtherForms,
       partOfSpeech: partOfSpeechInput.value.trim() || autoPartOfSpeech,
       definitions: definitionsInput.value.trim(),
       dictExample: dictExampleInput.value.trim() || autoDictExample,
