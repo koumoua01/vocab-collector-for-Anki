@@ -91,6 +91,16 @@ function truncateText(value, maxLength) {
   return `${trimmed}…`;
 }
 
+function buildPopoverContent(template) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(template, "text/html");
+  const root = doc.body.firstElementChild;
+  if (!root) {
+    return document.createDocumentFragment();
+  }
+  return document.importNode(root, true);
+}
+
 function removePopover() {
   if (popover) popover.remove();
   if (popoverBackdrop) popoverBackdrop.remove();
@@ -110,7 +120,7 @@ async function createPopover(selection) {
 
   popover = document.createElement("div");
   popover.className = "vc-popover";
-  popover.innerHTML = template;
+  popover.appendChild(buildPopoverContent(template));
 
   document.body.appendChild(popoverBackdrop);
   document.body.appendChild(popover);
