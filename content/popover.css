@@ -1,0 +1,214 @@
+.vc-root,
+.vc-root * {
+  box-sizing: border-box;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+.vc-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2147483646;
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.vc-popover {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  width: 340px;
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
+  overflow: hidden;
+  z-index: 2147483647;
+  background: #0f172a;
+  color: #e2e8f0;
+  border: 1px solid #1f2937;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.45);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.vc-root {
+  max-height: calc(100vh - 80px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.vc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.vc-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.vc-close {
+  all: unset;
+  cursor: pointer;
+  color: #93c5fd;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px;
+  border-radius: 6px;
+}
+
+.vc-close:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.vc-field {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.vc-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.vc-input,
+.vc-textarea,
+.vc-select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0b1220;
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.4;
+  font: inherit;
+  box-shadow: none;
+  outline: none;
+  appearance: none;
+  -moz-appearance: none;
+}
+
+.vc-input {
+  min-height: 34px;
+}
+
+.vc-textarea {
+  resize: vertical;
+}
+
+.vc-select {
+  background-image: none;
+}
+
+@supports (-moz-appearance: none) {
+  .vc-input,
+  .vc-select {
+    min-height: 30px;
+    padding: 6px 8px;
+  }
+
+  .vc-textarea {
+    padding: 6px 8px;
+  }
+}
+
+.vc-button {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-align: center;
+}
+
+.vc-button:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
+}
+
+.vc-button--secondary {
+  background: #1f2937;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+.vc-button--primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.vc-button--ghost {
+  background: transparent;
+  color: #93c5fd;
+  border-color: #334155;
+}
+
+.vc-details {
+  margin-top: 8px;
+}
+
+.vc-summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: #93c5fd;
+}
+
+.vc-more-fields {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.vc-source {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.vc-source-link {
+  color: #93c5fd;
+  text-decoration: none;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.vc-status {
+  font-size: 11px;
+  color: #cbd5f5;
+}
+
+/* Custom Scrollbar */
+.vc-root::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.vc-root::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.vc-root::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+
+.vc-root::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
