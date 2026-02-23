@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Vocab Collector for Anki",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Collect words from the web and save to Anki via AnkiConnect.",
   "action": {
     "default_title": "Collect Vocab",
