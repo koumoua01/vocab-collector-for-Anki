@@ -270,25 +270,86 @@ async function aiDefine(term) {
     if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
       return value.slice(firstBrace, lastBrace + 1).trim();
     }
+    const firstBracket = value.indexOf("[");
+    const lastBracket = value.lastIndexOf("]");
+    if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+      return value.slice(firstBracket, lastBracket + 1).trim();
+    }
     return null;
   };
   let parsed = null;
   try {
-    const jsonText = extractJson(text);
+    let jsonText = extractJson(text);
     if (jsonText) {
+      // Fix common JSON issues like trailing commas
+      jsonText = jsonText.replace(/,\s*([}\]])/g, '$1');
       parsed = JSON.parse(jsonText);
     }
   } catch (error) {
     parsed = null;
   }
+
+  if (!parsed) {
+    // Fallback: try to extract fields using regex if JSON parsing fails
+    const extractField = (field) => {
+      const strRegex = new RegExp(`"${field}"\\s*:\\s*"([^"\\\\]*(?:\\\\[\\s\\S][^"\\\\]*)*)"`, 'i');
+      const strMatch = text.match(strRegex);
+      if (strMatch && strMatch[1]) {
+        try {
+          return JSON.parse(`"${strMatch[1]}"`); // Handle escaped characters
+        } catch (e) {
+          return strMatch[1];
+        }
+      }
+      const arrRegex = new RegExp(`"${field}"\\s*:\\s*\\[([^\\]]*)\\]`, 'i');
+      const arrMatch = text.match(arrRegex);
+      if (arrMatch && arrMatch[1]) {
+        const items = arrMatch[1].match(/"([^"\\\\]*(?:\\\\[\\s\\S][^"\\\\]*)*)"/g);
+        if (items) {
+          return items.map(item => {
+            try {
+              return JSON.parse(item);
+            } catch (e) {
+              return item.replace(/^"|"$/g, '');
+            }
+          }).join(field === "definitions" || field === "definition" ? "\n" : ", ");
+        }
+      }
+      return "";
+    };
+    const fallbackParsed = {
+      definitions: extractField("definitions") || extractField("definition"),
+      partOfSpeech: extractField("partOfSpeech") || extractField("pos"),
+      synonyms: extractField("synonyms"),
+      antonyms: extractField("antonyms"),
+      dictExample: extractField("dictExample") || extractField("example") || extractField("sourceExample"),
+      phonetic: extractField("phonetic"),
+      origin: extractField("origin"),
+      otherForms: extractField("otherForms") || extractField("inflections")
+    };
+    if (fallbackParsed.definitions || fallbackParsed.dictExample || fallbackParsed.partOfSpeech) {
+      parsed = fallbackParsed;
+    }
+  }
+
+  if (Array.isArray(parsed) && parsed.length > 0) {
+    parsed = parsed[0];
+  }
+  if (parsed && parsed.result && typeof parsed.result === 'object') {
+    parsed = parsed.result;
+  }
+  if (parsed && parsed.word && typeof parsed.word === 'object') {
+    parsed = parsed.word;
+  }
+
   if (parsed && (parsed.definition || parsed.definitions || parsed.example || parsed.sourceExample || parsed.dictExample)) {
-    const normalizeValue = (value) => {
-      if (Array.isArray(value)) return value.map(String).join(", ");
+    const normalizeValue = (value, isDefinition = false) => {
+      if (Array.isArray(value)) return value.map(String).join(isDefinition ? "\n" : ", ");
       if (value === null || value === undefined) return "";
       return String(value);
     };
     return {
-      definitions: normalizeValue(parsed.definitions ?? parsed.definition).trim(),
+      definitions: normalizeValue(parsed.definitions ?? parsed.definition, true).trim(),
       partOfSpeech: normalizeValue(parsed.partOfSpeech ?? parsed.pos).trim(),
       synonyms: normalizeValue(parsed.synonyms).trim(),
       antonyms: normalizeValue(parsed.antonyms).trim(),
